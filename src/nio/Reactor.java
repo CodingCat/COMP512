@@ -38,6 +38,7 @@ public abstract class Reactor implements Runnable {
 
     private Message read(SelectionKey key) {
         try {
+            //assuming that the message is never larger than 8192 bytes
             ByteBuffer readBuffer = ByteBuffer.allocate(8192);
             SocketChannel socketChannel = (SocketChannel) key.channel();
             readBuffer.clear();
@@ -45,8 +46,11 @@ public abstract class Reactor implements Runnable {
             if (readbytes == -1) {
                 key.channel().close();
                 key.cancel();
+                return null;
             }
-            return Message.getMessage(readBuffer.array());
+            ByteBuffer ret = ByteBuffer.allocate(readbytes);
+            ret.put(readBuffer.array(), 0, readbytes);
+            return Message.deserialize(ret.array());
         } catch (IOException e) {
             //key.cancel();
             //((SocketChannel) key.channel()).close();

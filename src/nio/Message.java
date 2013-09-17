@@ -1,10 +1,9 @@
 package nio;
 
 
-import java.nio.ByteBuffer;
-import java.util.Arrays;
+import java.io.*;
 
-public class Message {
+public class Message implements Serializable {
     //header part
     //8 byte
     protected int messageID = -1;
@@ -12,12 +11,28 @@ public class Message {
 
     protected byte[] payload = null;
 
-    public static Message getMessage(byte[] rawData) {
-        Message msg = new Message();
-        msg.messageID = ByteBuffer.wrap(Arrays.copyOfRange(rawData, 0, 4)).getInt();
-        msg.messageLength = ByteBuffer.wrap(Arrays.copyOfRange(rawData, 4, 8)).getInt();
-        msg.payload = new byte[rawData.length - 8];
-        msg.payload = Arrays.copyOfRange(rawData, 8, rawData.length);
-        return msg;
+    public static byte[] serialize(Message obj) {
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            ObjectOutputStream os = new ObjectOutputStream(out);
+            os.writeObject(obj);
+            return out.toByteArray();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static Message deserialize(byte[] data) {
+        try {
+            ByteArrayInputStream in = new ByteArrayInputStream(data);
+            ObjectInputStream is = new ObjectInputStream(in);
+            Message ret = (Message) is.readObject();
+            is.close();
+            return ret;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
