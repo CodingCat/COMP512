@@ -203,5 +203,5 @@ public abstract class Reactor implements Runnable {
     }
 
 
-    abstract void dispatch(Message msg);
+    public abstract void dispatch(Message msg);
 }
