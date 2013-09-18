@@ -107,7 +107,11 @@ public abstract class Reactor implements Runnable {
         }
     }
 
-
+    /**
+     * read data from the socket
+     * @param key
+     * @return the socket
+     */
     private Message read(SelectionKey key) {
         try {
             //assuming that the message is never larger than 8192 bytes
