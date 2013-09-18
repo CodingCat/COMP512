@@ -27,12 +27,12 @@ public abstract class Reactor implements Runnable {
 
     public Reactor(){}
 
-    public Reactor(InetAddress hostAddress, int port) {
+    public Reactor(String hostIP, int port) {
         try {
             //initialize serverSelector
             serverSelector = Selector.open();
             serverSocket = ServerSocketChannel.open();
-            serverSocket.socket().bind(new InetSocketAddress(hostAddress, port));
+            serverSocket.socket().bind(new InetSocketAddress(hostIP, port));
             serverSocket.configureBlocking(false);
             serverSocket.register(serverSelector, SelectionKey.OP_ACCEPT);
             //initialize clientSelector
@@ -57,16 +57,17 @@ public abstract class Reactor implements Runnable {
     /**
      * this function is optinally called, when you want to make the reactor in both of the role of
      * client and server, you can call this
-     * @param serverAddress
+     * @param serverIP
      * @param port
      */
-    protected void setClientEndPoint(String socketID, InetAddress serverAddress, int port) {
+    protected void setClientEndPoint(String socketID, String serverIP, int port) {
         try {
             if (!clientRole) {
                 clientRole = true;
                 serverChannelMap = new HashMap<String, SocketChannel>();
                 clientWriteBuffer = new HashMap<SocketChannel, ArrayList<ByteBuffer>>();
             }
+            InetAddress serverAddress = InetAddress.getByName(serverIP);
             // Create a non-blocking socket channel
             SocketChannel socketChannel = SocketChannel.open();
             socketChannel.configureBlocking(false);
@@ -84,6 +85,7 @@ public abstract class Reactor implements Runnable {
         SocketChannel socketChannel = serverSocketChannel.accept();
         socketChannel.configureBlocking(false);
         socketChannel.register(serverSelector, SelectionKey.OP_READ);
+        System.out.println("registered incoming Channel");
     }
 
     /**
@@ -119,10 +121,9 @@ public abstract class Reactor implements Runnable {
             SocketChannel socketChannel = (SocketChannel) key.channel();
             readBuffer.clear();
             int readbytes = socketChannel.read(readBuffer);
-            if (readbytes == -1) {
-                key.channel().close();
-                key.cancel();
-                return null;
+            while (readbytes <= 0) {
+                System.out.println("readbytes: " + readbytes);
+                readbytes = socketChannel.read(readBuffer);
             }
             ByteBuffer ret = ByteBuffer.allocate(readbytes);
             ret.put(readBuffer.array(), 0, readbytes);
@@ -137,7 +138,7 @@ public abstract class Reactor implements Runnable {
 
 
 
-    private class serverGo implements Runnable {
+    private class ServerGo implements Runnable {
 
         @Override
         public void run() {
@@ -164,7 +165,7 @@ public abstract class Reactor implements Runnable {
         }
     }
 
-    private class clientGo implements Runnable {
+    private class ClientGo implements Runnable {
 
         @Override
         public void run() {
@@ -194,10 +195,10 @@ public abstract class Reactor implements Runnable {
 
     @Override
     public void run() {
-        Thread t_server = new Thread(new serverGo());
+        Thread t_server = new Thread(new ServerGo());
         t_server.start();
         if (clientRole) {
-            Thread t_client = new Thread(new clientGo());
+            Thread t_client = new Thread(new ClientGo());
             t_client.start();
         }
     }

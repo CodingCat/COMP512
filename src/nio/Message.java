@@ -9,6 +9,14 @@ public class Message implements Serializable {
     protected int messageID = -1;
     protected int messageLength = 8;
 
+    public int getMessageID () {
+        return messageID;
+    }
+
+    public int getMessageLength () {
+        return messageLength;
+    }
+
     public static byte[] serialize(Message obj) {
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
