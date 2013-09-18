@@ -2,9 +2,16 @@ package server.ResInterface;
 
 import nio.Reactor;
 
+import java.net.InetAddress;
 import java.util.Vector;
 
 public abstract class ASyncResourceManager extends Reactor {
+
+    public ASyncResourceManager() {}
+
+    public ASyncResourceManager(InetAddress hostAddress, int port)  {
+        super(hostAddress, port);
+    }
 
     /* Add seats to a flight.  In general this will be used to create a new
      * flight, but it should be possible to add seats to an existing flight.
