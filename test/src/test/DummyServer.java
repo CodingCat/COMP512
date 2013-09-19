@@ -14,7 +14,7 @@ public class DummyServer extends Reactor {
         if (msg instanceof DummyMessage) {
             System.out.println(((DummyMessage) msg).getAdditionalVariable());
         } else {
-            System.out.println("unrecognized message id:" + msg.getMessageID());
+            System.out.println(Message.serialize(msg));
         }
     }
 

@@ -42,7 +42,8 @@ public class ASyncClient {
                         if (channel.isConnectionPending()) channel.finishConnect();
                         channel.configureBlocking(false);
                         channel.write(ByteBuffer.wrap(Message.serialize(outMsg)));
-                        channel.register(clientSelector, SelectionKey.OP_READ);
+                        //channel.register(clientSelector, SelectionKey.OP_READ);
+                        selectkey.interestOps(SelectionKey.OP_READ);
                     } else {
                         if (selectkey.isReadable()) {
                             System.out.println("reading response from server");

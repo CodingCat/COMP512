@@ -1,14 +1,12 @@
 package nio;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.channels.spi.SelectorProvider;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
@@ -36,7 +34,7 @@ public abstract class Reactor implements Runnable {
             serverSocket.configureBlocking(false);
             serverSocket.register(serverSelector, SelectionKey.OP_ACCEPT);
             //initialize clientSelector
-            clientSelector = SelectorProvider.provider().openSelector();
+            clientSelector = Selector.open();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -48,10 +46,19 @@ public abstract class Reactor implements Runnable {
      * @param data
      */
     protected void send(String serverName, byte[] data) {
-        assert(serverChannelMap.containsKey(serverName));
-        SocketChannel socket = serverChannelMap.get(serverName);
-        assert(socket != null);
-        clientWriteBuffer.get(socket).add(ByteBuffer.wrap(data));
+        try {
+            assert (serverChannelMap.containsKey(serverName));
+            SocketChannel socketChannel = serverChannelMap.get(serverName);
+            assert (socketChannel != null);
+            synchronized (clientWriteBuffer) {
+                clientWriteBuffer.get(socketChannel).add(ByteBuffer.wrap(data));
+            }
+            socketChannel.keyFor(clientSelector).interestOps(SelectionKey.OP_WRITE);
+        //    write(socketChannel.keyFor(clientSelector));
+            clientSelector.wakeup();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -60,19 +67,19 @@ public abstract class Reactor implements Runnable {
      * @param serverIP
      * @param port
      */
-    protected void setClientEndPoint(String socketID, String serverIP, int port) {
+    public void setClientEndPoint(String socketID, String serverIP, int port) {
         try {
             if (!clientRole) {
                 clientRole = true;
                 serverChannelMap = new HashMap<String, SocketChannel>();
                 clientWriteBuffer = new HashMap<SocketChannel, ArrayList<ByteBuffer>>();
             }
-            InetAddress serverAddress = InetAddress.getByName(serverIP);
+            assert(!serverChannelMap.containsKey(socketID));
             // Create a non-blocking socket channel
             SocketChannel socketChannel = SocketChannel.open();
             socketChannel.configureBlocking(false);
-            socketChannel.connect(new InetSocketAddress(serverAddress, port));
-            socketChannel.register(clientSelector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+            socketChannel.connect(new InetSocketAddress(serverIP, port));
+            socketChannel.register(clientSelector, SelectionKey.OP_CONNECT);
             serverChannelMap.put(socketID, socketChannel);
             clientWriteBuffer.put(socketChannel, new ArrayList<ByteBuffer>());
         } catch (Exception e) {
@@ -88,11 +95,26 @@ public abstract class Reactor implements Runnable {
         System.out.println("registered incoming Channel");
     }
 
+    private void finishConnection(SelectionKey selectionKey) {
+        try {
+            SocketChannel channel = (SocketChannel) selectionKey.channel();
+            if (channel.isConnectionPending()) channel.finishConnect();
+            channel.configureBlocking(false);
+            //channel.register(clientSelector, SelectionKey.OP_WRITE);
+            selectionKey.interestOps(SelectionKey.OP_WRITE);
+        }
+        catch (Exception e) {
+            selectionKey.cancel();
+            e.printStackTrace();
+        }
+    }
+
     /**
      * write the buffer to the channel
      * @param key channelkey
      */
     private void write(SelectionKey key) {
+        System.out.println("write message to the channel");
         SocketChannel socket = (SocketChannel) key.channel();
         ArrayList<ByteBuffer> bytebufferlist = clientWriteBuffer.get(socket);
         try {
@@ -104,6 +126,9 @@ public abstract class Reactor implements Runnable {
                 }
                 bytebufferlist.remove(0);
             }
+            if (bytebufferlist.isEmpty())
+                //key.channel().register(clientSelector, SelectionKey.OP_READ);
+                key.interestOps(SelectionKey.OP_READ);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -121,9 +146,10 @@ public abstract class Reactor implements Runnable {
             SocketChannel socketChannel = (SocketChannel) key.channel();
             readBuffer.clear();
             int readbytes = socketChannel.read(readBuffer);
-            while (readbytes <= 0) {
-                System.out.println("readbytes: " + readbytes);
-                readbytes = socketChannel.read(readBuffer);
+            if (readbytes == -1) {
+                key.channel().close();
+                key.cancel();
+                return null;
             }
             ByteBuffer ret = ByteBuffer.allocate(readbytes);
             ret.put(readBuffer.array(), 0, readbytes);
@@ -153,7 +179,7 @@ public abstract class Reactor implements Runnable {
                             accept(selectkey);
                         } else {
                             if (selectkey.isReadable()) {
-                                dispatch(read(selectkey));
+                               dispatch(read(selectkey));
                             }
                         }
                     }
@@ -176,11 +202,13 @@ public abstract class Reactor implements Runnable {
                     for (Object aSelected : selected) {
                         //accept the connection
                         SelectionKey selectkey = (SelectionKey) aSelected;
-                        if (selectkey.isWritable()) {
-                            write(selectkey);
+                        if (selectkey.isConnectable()) {
+                            finishConnection(selectkey);
                         } else {
-                            if (selectkey.isReadable()) {
-                                dispatch(read(selectkey));
+                            if (selectkey.isWritable()) {
+                                write(selectkey);
+                            } else {
+                                System.out.println("unrecognizable op");
                             }
                         }
                     }
