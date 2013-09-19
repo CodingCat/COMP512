@@ -5,31 +5,71 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.Set;
 
 /**
  * the class representing the NIO client
  * does not consider connection pool now
  */
-public class ASyncClient {
+public class ASyncClient implements Runnable {
 
     private Selector clientSelector;
-    private InetSocketAddress serverAddress;
+    private SocketChannel toServerChannel;
+
+    private ArrayList<Message> writebuffer;
 
     public ASyncClient(String serverIP, int serverPort) {
         try {
+            writebuffer = new ArrayList<Message>();
             clientSelector = Selector.open();
-            serverAddress = new InetSocketAddress(serverIP, serverPort);
-            SocketChannel channel = SocketChannel.open();
-            channel.configureBlocking(false);
-            channel.connect(serverAddress);
-            channel.register(clientSelector, SelectionKey.OP_CONNECT);
+            InetSocketAddress serverAddress = new InetSocketAddress(serverIP, serverPort);
+            toServerChannel = SocketChannel.open();
+            toServerChannel.configureBlocking(false);
+            toServerChannel.connect(serverAddress);
+            toServerChannel.register(clientSelector, SelectionKey.OP_CONNECT);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void run (Message outMsg) {
+    /**
+     * public interface to users
+     * @param msg the message to be sent
+     */
+    public void send(Message msg) {
+        writebuffer.add(msg);
+        toServerChannel.keyFor(clientSelector).interestOps(SelectionKey.OP_WRITE);
+    }
+
+    private void write() {
+        try {
+            System.out.println("writing message");
+            while (!writebuffer.isEmpty()) {
+                ByteBuffer out = ByteBuffer.wrap(Message.serialize(writebuffer.get(0)));
+                toServerChannel.write(out);
+                if (out.remaining() > 0) break;
+                writebuffer.remove(0);
+            }
+            if (writebuffer.isEmpty())
+                toServerChannel.keyFor(clientSelector).interestOps(SelectionKey.OP_READ);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void finishConnection(SelectionKey key) {
+        try {
+            SocketChannel channel = (SocketChannel) key.channel();
+            if (channel.isConnectionPending()) channel.finishConnect();
+            channel.configureBlocking(false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void run () {
         try {
             while (true) {
                 clientSelector.select();
@@ -38,15 +78,14 @@ public class ASyncClient {
                     //accept the connection
                     SelectionKey selectkey = (SelectionKey) aSelected;
                     if (selectkey.isConnectable()) {
-                        SocketChannel channel = (SocketChannel) selectkey.channel();
-                        if (channel.isConnectionPending()) channel.finishConnect();
-                        channel.configureBlocking(false);
-                        channel.write(ByteBuffer.wrap(Message.serialize(outMsg)));
-                        //channel.register(clientSelector, SelectionKey.OP_READ);
-                        selectkey.interestOps(SelectionKey.OP_READ);
+                        finishConnection(selectkey);
                     } else {
                         if (selectkey.isReadable()) {
-                            System.out.println("reading response from server");
+                          //  System.out.println("reading response from server");
+                        } else {
+                            if (selectkey.isWritable()) {
+                                write();
+                            }
                         }
                     }
                 }

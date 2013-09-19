@@ -12,7 +12,7 @@ public class DummyServer extends Reactor {
 
     public void dispatch (Message msg) {
         if (msg instanceof DummyMessage) {
-            System.out.println(((DummyMessage) msg).getAdditionalVariable());
+            System.out.println(((DummyMessage) msg).getText());
         } else {
             System.out.println(Message.serialize(msg));
         }

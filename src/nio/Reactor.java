@@ -100,7 +100,6 @@ public abstract class Reactor implements Runnable {
             SocketChannel channel = (SocketChannel) selectionKey.channel();
             if (channel.isConnectionPending()) channel.finishConnect();
             channel.configureBlocking(false);
-            //selectionKey.interestOps(SelectionKey.OP_WRITE);
         }
         catch (Exception e) {
             selectionKey.cancel();

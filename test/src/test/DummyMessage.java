@@ -3,9 +3,14 @@ package test;
 import nio.Message;
 
 public class DummyMessage extends Message {
-    private int additionalVariable = 100;
 
-    public int getAdditionalVariable() {
-        return additionalVariable;
+    private String text = "HelloWorld";
+
+    public void setText(String t) {
+        text = t;
+    }
+
+    public String getText() {
+        return text;
     }
 }
