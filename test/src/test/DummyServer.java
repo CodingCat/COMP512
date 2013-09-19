@@ -2,9 +2,9 @@ package test;
 
 
 import nio.Message;
-import nio.Reactor;
+import nio.NIOReactor;
 
-public class DummyServer extends Reactor {
+public class DummyServer extends NIOReactor {
 
     public DummyServer (String ip, int port) {
         super(ip, port);

@@ -1,10 +1,10 @@
 package server.ResInterface;
 
-import nio.Reactor;
+import nio.NIOReactor;
 
 import java.util.Vector;
 
-public abstract class ASyncResourceManager extends Reactor {
+public abstract class ASyncResourceManager extends NIOReactor {
 
     public ASyncResourceManager() {}
 

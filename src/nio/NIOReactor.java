@@ -14,7 +14,7 @@ import java.util.Set;
 /**
  * the class representing the reactor in NIO model,
  */
-public abstract class Reactor implements Runnable {
+public abstract class NIOReactor implements Runnable {
 
     private Selector serverSelector, clientSelector;
     private boolean clientRole = false;
@@ -23,9 +23,9 @@ public abstract class Reactor implements Runnable {
     private HashMap<SocketChannel, ArrayList<ByteBuffer>> clientWriteBuffer = null;//for client use
 
 
-    public Reactor(){}
+    public NIOReactor(){}
 
-    public Reactor(String hostIP, int port) {
+    public NIOReactor(String hostIP, int port) {
         try {
             //initialize serverSelector
             serverSelector = Selector.open();

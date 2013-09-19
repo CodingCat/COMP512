@@ -12,14 +12,14 @@ import java.util.Set;
  * the class representing the NIO client
  * does not consider connection pool now
  */
-public class ASyncClient implements Runnable {
+public class NIOClient implements Runnable {
 
     private Selector clientSelector;
     private SocketChannel toServerChannel;
 
     private ArrayList<Message> writebuffer;
 
-    public ASyncClient(String serverIP, int serverPort) {
+    public NIOClient(String serverIP, int serverPort) {
         try {
             writebuffer = new ArrayList<Message>();
             clientSelector = Selector.open();
