@@ -4,11 +4,11 @@ import nio.NIOReactor;
 
 import java.util.Vector;
 
-public abstract class ASyncResourceManager extends NIOReactor {
+public abstract class NIOResourceManager extends NIOReactor {
 
-    public ASyncResourceManager() {}
+    public NIOResourceManager() {}
 
-    public ASyncResourceManager(String hostIP, int port)  {
+    public NIOResourceManager(String hostIP, int port)  {
         super(hostIP, port);
     }
 
