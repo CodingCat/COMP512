@@ -8,6 +8,7 @@ public class DummyMessage extends Message {
 
     public void setText(String t) {
         text = t;
+        messageLength = 8 + text.length();
     }
 
     public String getText() {
