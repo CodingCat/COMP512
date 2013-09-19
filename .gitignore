@@ -1,4 +1,9 @@
 .idea
 out
 *.iml
+<<<<<<< HEAD
 
+=======
+*.class
+META-INF
+>>>>>>> 1bf252ddfdd655e08c74985dd972cc9512d96f72
