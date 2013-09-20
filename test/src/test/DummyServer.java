@@ -12,7 +12,10 @@ public class DummyServer extends NIOReactor {
 
     public void dispatch (Message msg) {
         if (msg instanceof DummyMessage) {
-            System.out.println(((DummyMessage) msg).getText());
+            DummyMessage dmsg = new DummyMessage();
+            dmsg.transactionID = msg.getTransactionID();
+            dmsg.setText("response for " + ((DummyMessage) msg).getText());
+            reply(dmsg);
         } else {
             System.out.println(Message.serialize(msg));
         }

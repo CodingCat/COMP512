@@ -9,8 +9,13 @@ public class Message implements Serializable {
     protected int messageID = -1;
     protected int messageLength = 8;
 
-    public String messageSrcIP = null;
-    public int messageSrcPort = -1;
+    //transactionID is used to identify the sponsor of the
+    //message
+    public int transactionID = -1;
+
+    public int getTransactionID() {
+        return transactionID;
+    }
 
     public int getMessageID () {
         return messageID;

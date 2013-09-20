@@ -12,7 +12,7 @@ public class DummyServerClient extends NIOReactor {
     @Override
     public void dispatch(Message msg) {
         if (msg instanceof DummyMessage) {
-            forward("dummyserver", Message.serialize(msg));
+            forward("dummyserver", msg);
         }
     }
 

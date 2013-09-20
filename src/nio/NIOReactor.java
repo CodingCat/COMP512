@@ -47,8 +47,8 @@ public abstract class NIOReactor implements Runnable {
 
     protected void reply(Message msg) {
         try {
-            int key = (msg.messageSrcIP + "," + msg.messageSrcPort).hashCode();
-            System.out.println("the key is " + key + " with " + msg.messageSrcIP + "," + msg.messageSrcPort);
+            int key = msg.getTransactionID();
+            System.out.println(key);
             SocketChannel socketChannel = clientConnections.get(key);
             synchronized (clientWriteBuffer) {
                 clientWriteBuffer.get(socketChannel).add(ByteBuffer.wrap(Message.serialize(msg)));
@@ -153,7 +153,7 @@ public abstract class NIOReactor implements Runnable {
         System.out.println("registered incoming Channel:" + clientIP + "," + clientPort);
         //track client connection
         System.out.println("tracking " + (clientIP+ ":" + clientPort).hashCode());
-        clientConnections.put((clientIP+ "," + clientPort).hashCode(), socketChannel);
+        clientConnections.put((clientIP+ ":" + clientPort).hashCode(), socketChannel);
         clientWriteBuffer.put(socketChannel, new ArrayList<ByteBuffer>());
     }
 
@@ -188,12 +188,11 @@ public abstract class NIOReactor implements Runnable {
             }
             ByteBuffer ret = ByteBuffer.allocate(readbytes);
             ret.put(readBuffer.array(), 0, readbytes);
-            Message inMessage = Message.deserialize(ret.array());
-            inMessage.messageSrcIP = ((InetSocketAddress)
-                    socketChannel.getRemoteAddress()).getAddress().getHostAddress();
-            inMessage.messageSrcPort = ((InetSocketAddress)
-                    socketChannel.getRemoteAddress()).getPort();
-            return inMessage;
+            Message inMsg =  Message.deserialize(ret.array());
+            String clientIP = ((InetSocketAddress) socketChannel.getRemoteAddress()).getAddress().getHostAddress();
+            int clientPort = ((InetSocketAddress) socketChannel.getRemoteAddress()).getPort();
+            inMsg.transactionID = (clientIP + ":" + clientPort).hashCode();
+            return inMsg;
         } catch (IOException e) {
             //key.cancel();
             //((SocketChannel) key.channel()).close();
