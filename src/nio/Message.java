@@ -9,6 +9,9 @@ public class Message implements Serializable {
     protected int messageID = -1;
     protected int messageLength = 8;
 
+    String messageSrcIP = null;
+    int messageSrcPort = -1;
+
     public int getMessageID () {
         return messageID;
     }

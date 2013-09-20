@@ -18,9 +18,11 @@ public abstract class NIOReactor implements Runnable {
 
     private Selector serverSelector, clientSelector;
     private boolean clientRole = false;
+    private HashMap<Integer, SocketChannel> clientConnections = null;
+    private HashMap<SocketChannel, ArrayList<ByteBuffer>> clientWriteBuffer = null;
     private ServerSocketChannel serverSocket;
-    private HashMap<String, SocketChannel> serverChannelMap = null;  //for client use
-    private HashMap<SocketChannel, ArrayList<ByteBuffer>> clientForwardBuffer = null;//for client use
+    private HashMap<String, SocketChannel> channelMap = null;  //for client use
+    private HashMap<SocketChannel, ArrayList<ByteBuffer>> forwardBuffer = null;//for client use
 
 
     public NIOReactor(){}
@@ -28,6 +30,8 @@ public abstract class NIOReactor implements Runnable {
     public NIOReactor(String hostIP, int port) {
         try {
             //initialize serverSelector
+            clientConnections = new HashMap<Integer, SocketChannel>();
+            clientWriteBuffer = new HashMap<SocketChannel, ArrayList<ByteBuffer>>();
             serverSelector = Selector.open();
             serverSocket = ServerSocketChannel.open();
             serverSocket.socket().bind(new InetSocketAddress(hostIP, port));
@@ -41,22 +45,74 @@ public abstract class NIOReactor implements Runnable {
     }
 
 
+    protected void reply(Message msg) {
+        try {
+            int key = (msg.messageSrcIP + "," + msg.messageSrcPort).hashCode();
+            assert(clientConnections.containsKey(key));
+            SocketChannel socketChannel = clientConnections.get(key);
+            assert(clientWriteBuffer.containsKey(socketChannel));
+            synchronized (clientWriteBuffer) {
+                clientWriteBuffer.get(socketChannel).add(ByteBuffer.wrap(Message.serialize(msg)));
+            }
+            socketChannel.keyFor(serverSelector).interestOps(SelectionKey.OP_WRITE);
+            serverSelector.wakeup();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void replyInternal(SelectionKey key) {
+        SocketChannel channel = (SocketChannel) key.channel();
+        ArrayList<ByteBuffer> bytebufferlist = clientWriteBuffer.get(channel);
+        sendOutBuffer(bytebufferlist, channel);
+        key.interestOps(SelectionKey.OP_READ);
+    }
+
     /**
      * forward data to the server which is identified with its logical name
      * @param serverName
-     * @param data
+     * @param message
      */
-    protected void forward(String serverName, byte[] data) {
+    protected void forward(String serverName, Message message) {
         try {
-            assert (serverChannelMap.containsKey(serverName));
-            SocketChannel socketChannel = serverChannelMap.get(serverName);
+            assert (channelMap.containsKey(serverName));
+            SocketChannel socketChannel = channelMap.get(serverName);
             assert (socketChannel != null);
-            synchronized (clientForwardBuffer) {
-                clientForwardBuffer.get(socketChannel).add(ByteBuffer.wrap(data));
+            synchronized (forwardBuffer) {
+                forwardBuffer.get(socketChannel).add(ByteBuffer.wrap(Message.serialize(message)));
             }
             socketChannel.keyFor(clientSelector).interestOps(SelectionKey.OP_WRITE);
         //    forwardInternal(socketChannel.keyFor(clientSelector));
             clientSelector.wakeup();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * forwardInternal the buffer to the channel
+     * @param key channelkey
+     */
+    private void forwardInternal(SelectionKey key) {
+        System.out.println("forward message to the channel");
+        SocketChannel socket = (SocketChannel) key.channel();
+        ArrayList<ByteBuffer> bytebufferlist = forwardBuffer.get(socket);
+        sendOutBuffer(bytebufferlist, socket);
+        if (bytebufferlist.isEmpty())
+        //key.channel().register(clientSelector, SelectionKey.OP_READ);
+        key.interestOps(SelectionKey.OP_READ);
+    }
+
+    private void sendOutBuffer(ArrayList<ByteBuffer> buffer, SocketChannel socket) {
+        try {
+            while (!buffer.isEmpty()) {
+                socket.write(buffer.get(0));
+                if (buffer.get(0).remaining() > 0) {
+                    //tcp buffer is full
+                    return;
+                }
+                buffer.remove(0);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -72,17 +128,17 @@ public abstract class NIOReactor implements Runnable {
         try {
             if (!clientRole) {
                 clientRole = true;
-                serverChannelMap = new HashMap<String, SocketChannel>();
-                clientForwardBuffer = new HashMap<SocketChannel, ArrayList<ByteBuffer>>();
+                channelMap = new HashMap<String, SocketChannel>();
+                forwardBuffer = new HashMap<SocketChannel, ArrayList<ByteBuffer>>();
             }
-            assert(!serverChannelMap.containsKey(socketID));
+            assert(!channelMap.containsKey(socketID));
             // Create a non-blocking socket channel
             SocketChannel socketChannel = SocketChannel.open();
             socketChannel.configureBlocking(false);
             socketChannel.connect(new InetSocketAddress(serverIP, port));
             socketChannel.register(clientSelector, SelectionKey.OP_CONNECT);
-            serverChannelMap.put(socketID, socketChannel);
-            clientForwardBuffer.put(socketChannel, new ArrayList<ByteBuffer>());
+            channelMap.put(socketID, socketChannel);
+            forwardBuffer.put(socketChannel, new ArrayList<ByteBuffer>());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -91,11 +147,14 @@ public abstract class NIOReactor implements Runnable {
     private void accept(SelectionKey key) throws IOException {
         ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
         SocketChannel socketChannel = serverSocketChannel.accept();
+        String clientIP = ((InetSocketAddress) socketChannel.getRemoteAddress()).getAddress().getHostAddress();
+        int clientPort = ((InetSocketAddress) socketChannel.getRemoteAddress()).getPort();
         socketChannel.configureBlocking(false);
         socketChannel.register(serverSelector, SelectionKey.OP_READ);
-        System.out.println("registered incoming Channel:" +
-                ((InetSocketAddress) socketChannel.getRemoteAddress()).getAddress().getHostAddress() +
-                ":" + ((InetSocketAddress) socketChannel.getRemoteAddress()).getPort());
+        System.out.println("registered incoming Channel:" + clientIP + "," + clientPort);
+        //track client connection
+        clientConnections.put((clientIP+ ":" + clientPort).hashCode(), socketChannel);
+        clientWriteBuffer.put(socketChannel, new ArrayList<ByteBuffer>());
     }
 
     private void finishConnection(SelectionKey selectionKey) {
@@ -110,32 +169,7 @@ public abstract class NIOReactor implements Runnable {
         }
     }
 
-    /**
-     * forwardInternal the buffer to the channel
-     * @param key channelkey
-     */
-    protected void forwardInternal(SelectionKey key) {
-        System.out.println("forward message to the channel");
-        SocketChannel socket = (SocketChannel) key.channel();
-        ArrayList<ByteBuffer> bytebufferlist = clientForwardBuffer.get(socket);
-        try {
-            while (!bytebufferlist.isEmpty()) {
-                socket.write(bytebufferlist.get(0));
-                if (bytebufferlist.get(0).remaining() > 0) {
-                    //tcp buffer is full
-                    break;
-                }
-                bytebufferlist.remove(0);
-            }
-            if (bytebufferlist.isEmpty())
-                //key.channel().register(clientSelector, SelectionKey.OP_READ);
-                key.interestOps(SelectionKey.OP_READ);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
+   /**
      * read data from the socket
      * @param key
      * @return the socket
@@ -181,6 +215,10 @@ public abstract class NIOReactor implements Runnable {
                         } else {
                             if (selectkey.isReadable()) {
                                dispatch(read(selectkey));
+                            } else {
+                                if (selectkey.isWritable()) {
+                                    replyInternal(selectkey);
+                                }
                             }
                         }
                     }
