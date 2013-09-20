@@ -2,7 +2,7 @@
 // adapted Kevin T. Manley
 // CSE 593
 // -------------------------------
-package ResImpl;
+package server.ResImpl;
 
 import java.io.*;
 

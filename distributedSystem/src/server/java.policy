@@ -1,5 +1,0 @@
-grant codeBase "file:/home/kai/Kai/servercode-" {
-   permission java.security.AllPermission;
-};
-
-
