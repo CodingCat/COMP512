@@ -20,7 +20,7 @@ public abstract class NIOReactor implements Runnable {
     private boolean clientRole = false;
     private ServerSocketChannel serverSocket;
     private HashMap<String, SocketChannel> serverChannelMap = null;  //for client use
-    private HashMap<SocketChannel, ArrayList<ByteBuffer>> clientWriteBuffer = null;//for client use
+    private HashMap<SocketChannel, ArrayList<ByteBuffer>> clientForwardBuffer = null;//for client use
 
 
     public NIOReactor(){}
@@ -40,21 +40,22 @@ public abstract class NIOReactor implements Runnable {
         }
     }
 
+
     /**
-     * send data to the server which is identified with its logical name
+     * forward data to the server which is identified with its logical name
      * @param serverName
      * @param data
      */
-    protected void send(String serverName, byte[] data) {
+    protected void forward(String serverName, byte[] data) {
         try {
             assert (serverChannelMap.containsKey(serverName));
             SocketChannel socketChannel = serverChannelMap.get(serverName);
             assert (socketChannel != null);
-            synchronized (clientWriteBuffer) {
-                clientWriteBuffer.get(socketChannel).add(ByteBuffer.wrap(data));
+            synchronized (clientForwardBuffer) {
+                clientForwardBuffer.get(socketChannel).add(ByteBuffer.wrap(data));
             }
             socketChannel.keyFor(clientSelector).interestOps(SelectionKey.OP_WRITE);
-        //    write(socketChannel.keyFor(clientSelector));
+        //    forwardInternal(socketChannel.keyFor(clientSelector));
             clientSelector.wakeup();
         } catch (Exception e) {
             e.printStackTrace();
@@ -72,7 +73,7 @@ public abstract class NIOReactor implements Runnable {
             if (!clientRole) {
                 clientRole = true;
                 serverChannelMap = new HashMap<String, SocketChannel>();
-                clientWriteBuffer = new HashMap<SocketChannel, ArrayList<ByteBuffer>>();
+                clientForwardBuffer = new HashMap<SocketChannel, ArrayList<ByteBuffer>>();
             }
             assert(!serverChannelMap.containsKey(socketID));
             // Create a non-blocking socket channel
@@ -81,7 +82,7 @@ public abstract class NIOReactor implements Runnable {
             socketChannel.connect(new InetSocketAddress(serverIP, port));
             socketChannel.register(clientSelector, SelectionKey.OP_CONNECT);
             serverChannelMap.put(socketID, socketChannel);
-            clientWriteBuffer.put(socketChannel, new ArrayList<ByteBuffer>());
+            clientForwardBuffer.put(socketChannel, new ArrayList<ByteBuffer>());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -92,7 +93,9 @@ public abstract class NIOReactor implements Runnable {
         SocketChannel socketChannel = serverSocketChannel.accept();
         socketChannel.configureBlocking(false);
         socketChannel.register(serverSelector, SelectionKey.OP_READ);
-        System.out.println("registered incoming Channel");
+        System.out.println("registered incoming Channel:" +
+                ((InetSocketAddress) socketChannel.getRemoteAddress()).getAddress().getHostAddress() +
+                ":" + ((InetSocketAddress) socketChannel.getRemoteAddress()).getPort());
     }
 
     private void finishConnection(SelectionKey selectionKey) {
@@ -108,13 +111,13 @@ public abstract class NIOReactor implements Runnable {
     }
 
     /**
-     * write the buffer to the channel
+     * forwardInternal the buffer to the channel
      * @param key channelkey
      */
-    private void write(SelectionKey key) {
-        System.out.println("write message to the channel");
+    protected void forwardInternal(SelectionKey key) {
+        System.out.println("forward message to the channel");
         SocketChannel socket = (SocketChannel) key.channel();
-        ArrayList<ByteBuffer> bytebufferlist = clientWriteBuffer.get(socket);
+        ArrayList<ByteBuffer> bytebufferlist = clientForwardBuffer.get(socket);
         try {
             while (!bytebufferlist.isEmpty()) {
                 socket.write(bytebufferlist.get(0));
@@ -204,7 +207,7 @@ public abstract class NIOReactor implements Runnable {
                             finishConnection(selectkey);
                         } else {
                             if (selectkey.isWritable()) {
-                                write(selectkey);
+                                forwardInternal(selectkey);
                             } else {
                                 System.out.println("unrecognizable op");
                             }

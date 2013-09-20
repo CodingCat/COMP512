@@ -9,7 +9,7 @@ import java.io.InputStreamReader;
 public class TestClientMain {
 
     public static void main(String [] args) {
-        NIOClient client = new NIOClient(args[0], Integer.parseInt(args[1]));
+        NIOClient client = new DummyClient(args[0], Integer.parseInt(args[1]));
         Thread client_t = new Thread(client);
         client_t.start();
         DummyMessage dmsg = new DummyMessage();
