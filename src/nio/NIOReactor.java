@@ -48,9 +48,7 @@ public abstract class NIOReactor implements Runnable {
     protected void reply(Message msg) {
         try {
             int key = (msg.messageSrcIP + "," + msg.messageSrcPort).hashCode();
-            assert(clientConnections.containsKey(key));
             SocketChannel socketChannel = clientConnections.get(key);
-            assert(clientWriteBuffer.containsKey(socketChannel));
             synchronized (clientWriteBuffer) {
                 clientWriteBuffer.get(socketChannel).add(ByteBuffer.wrap(Message.serialize(msg)));
             }
@@ -153,6 +151,7 @@ public abstract class NIOReactor implements Runnable {
         socketChannel.register(serverSelector, SelectionKey.OP_READ);
         System.out.println("registered incoming Channel:" + clientIP + "," + clientPort);
         //track client connection
+        System.out.println("tracking " + (clientIP+ ":" + clientPort).hashCode());
         clientConnections.put((clientIP+ ":" + clientPort).hashCode(), socketChannel);
         clientWriteBuffer.put(socketChannel, new ArrayList<ByteBuffer>());
     }
@@ -188,7 +187,12 @@ public abstract class NIOReactor implements Runnable {
             }
             ByteBuffer ret = ByteBuffer.allocate(readbytes);
             ret.put(readBuffer.array(), 0, readbytes);
-            return Message.deserialize(ret.array());
+            Message inMessage = Message.deserialize(ret.array());
+            inMessage.messageSrcIP = ((InetSocketAddress)
+                    socketChannel.getRemoteAddress()).getAddress().getHostAddress();
+            inMessage.messageSrcPort = ((InetSocketAddress)
+                    socketChannel.getRemoteAddress()).getPort();
+            return inMessage;
         } catch (IOException e) {
             //key.cancel();
             //((SocketChannel) key.channel()).close();
