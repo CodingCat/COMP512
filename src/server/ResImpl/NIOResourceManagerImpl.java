@@ -336,4 +336,8 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
     public void dispatch(Message msg) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
+
+    public static void main(String [] args) {
+
+    }
 }
