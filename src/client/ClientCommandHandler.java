@@ -1,5 +1,6 @@
 package client;
 
+import message.AddCarRequest;
 import message.AddFlightRequest;
 import nio.Message;
 import nio.NIOClient;
@@ -31,6 +32,31 @@ public class ClientCommandHandler extends NIOClient {
             System.out.println("the interface does not support this command:" + commandName);
         else
             System.out.println(supportCommands.get(commandName));
+    }
+
+    public void newcar(Vector<String> arguments) {
+        if(arguments.size() != 5){
+            System.out.println("Wrong Argument List");
+            System.out.println(supportCommands.get("newcar"));
+            return;
+        }
+        System.out.println("Adding a new Car using id: "+arguments.elementAt(1));
+        System.out.println("Car Location: "+arguments.elementAt(2));
+        System.out.println("Add Number of Cars: "+arguments.elementAt(3));
+        System.out.println("Set Price: "+arguments.elementAt(4));
+        try{
+            int id = Integer.parseInt(arguments.elementAt(1));
+            String location = arguments.elementAt(2);
+            int numCars = Integer.parseInt(arguments.elementAt(3));
+            int price = Integer.parseInt(arguments.elementAt(4));
+            //send addcar request
+            send(new AddCarRequest(id, location, numCars, price));
+        }
+        catch(Exception e){
+            System.out.println("EXCEPTION:");
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public void newflight (Vector<String> arguments) {

@@ -25,8 +25,6 @@ public abstract class NIOReactor implements Runnable {
     private HashMap<SocketChannel, ArrayList<ByteBuffer>> forwardBuffer = null;//for client use
 
 
-    public NIOReactor(){}
-
     public NIOReactor(String hostIP, int port) {
         try {
             //initialize serverSelector
@@ -123,20 +121,20 @@ public abstract class NIOReactor implements Runnable {
      * @param serverIP
      * @param port
      */
-    public void setClientEndPoint(String socketID, String serverIP, int port) {
+    public void setClientEndPoint(String serverName, String serverIP, int port) {
         try {
             if (!clientRole) {
                 clientRole = true;
                 channelMap = new HashMap<String, SocketChannel>();
                 forwardBuffer = new HashMap<SocketChannel, ArrayList<ByteBuffer>>();
             }
-            assert(!channelMap.containsKey(socketID));
+            assert(!channelMap.containsKey(serverName));
             // Create a non-blocking socket channel
             SocketChannel socketChannel = SocketChannel.open();
             socketChannel.configureBlocking(false);
             socketChannel.connect(new InetSocketAddress(serverIP, port));
             socketChannel.register(clientSelector, SelectionKey.OP_CONNECT);
-            channelMap.put(socketID, socketChannel);
+            channelMap.put(serverName, socketChannel);
             forwardBuffer.put(socketChannel, new ArrayList<ByteBuffer>());
         } catch (Exception e) {
             e.printStackTrace();

@@ -16,4 +16,19 @@ public class AddFlightRequest extends ReservationMessage {
         flightprice = flightPrice;
     }
 
+    public int getID() {
+        return customerid;
+    }
+
+    public int getFlightNum() {
+        return flightnum;
+    }
+
+    public int getFlightSeat() {
+        return flightseat;
+    }
+
+    public int getFlightPrice() {
+        return flightprice;
+    }
 }

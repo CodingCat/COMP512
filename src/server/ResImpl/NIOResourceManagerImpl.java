@@ -1,5 +1,7 @@
 package server.ResImpl;
 
+import message.AddCarRequest;
+import message.AddFlightRequest;
 import message.ReservationMessage;
 import nio.Message;
 import server.ResInterface.NIOResourceManager;
@@ -343,7 +345,14 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
             ReservationMessage rmsg = (ReservationMessage) msg;
             switch (rmsg.getMessageType()) {
                 case ADD_FLIGHT_REQUEST:
-                    System.out.println("fuck");
+                    AddFlightRequest afreq = (AddFlightRequest) rmsg;
+                    addFlight(afreq.getID(), afreq.getFlightNum(),
+                            afreq.getFlightSeat(), afreq.getFlightPrice());
+                    break;
+                case ADD_CAR_REQUEST:
+                    AddCarRequest acreq = (AddCarRequest) rmsg;
+                    addCars(acreq.getID(), acreq.getLocation(),
+                            acreq.getCarnum(), acreq.getPrice());
                     break;
                 default:
                     System.out.println("unrecognizable message");
