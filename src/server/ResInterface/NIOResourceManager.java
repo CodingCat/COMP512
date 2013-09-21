@@ -6,8 +6,6 @@ import java.util.Vector;
 
 public abstract class NIOResourceManager extends NIOReactor {
 
-    public NIOResourceManager() {}
-
     public NIOResourceManager(String hostIP, int port)  {
         super(hostIP, port);
     }

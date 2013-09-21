@@ -16,10 +16,10 @@ public class NIOClientMain {
         cmdhandler = new ClientCommandHandler(serverIP, port);
     }
 
-    public Vector parse(String command) {
+    public Vector<String> parse(String command) {
         command = command.trim();
-        Vector arguments = new Vector();
-        StringTokenizer tokenizer = new StringTokenizer(command,",");
+        Vector<String> arguments = new Vector<String>();
+        StringTokenizer tokenizer = new StringTokenizer(command, ",");
         String argument ="";
         while (tokenizer.hasMoreTokens()) {
             argument = tokenizer.nextToken();
@@ -30,14 +30,16 @@ public class NIOClientMain {
     }
 
     private void dispatchCommand(String command) {
-        Vector arguments = parse(command);
-        String commandName = (String) arguments.get(0);
+        Vector<String> arguments = parse(command);
+        String commandName = arguments.get(0);
         //reflect to the function in ClientCommandHandler
+        System.out.println("commandName:" + commandName);
         try {
             Method method = cmdhandler.getClass().getMethod(
                         commandName, arguments.getClass());
             method.invoke(cmdhandler, arguments);
         } catch (NoSuchMethodException e) {
+            e.printStackTrace();
             System.out.println("no such a method");
         } catch (InvocationTargetException e) {
             System.out.println("invalid argument");

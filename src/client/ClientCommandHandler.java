@@ -13,7 +13,7 @@ public class ClientCommandHandler extends NIOClient {
 
     public ClientCommandHandler(String serverip, int serverport) {
         super(serverip, serverport);
-        supportCommands.put("helper", "Help\nTyping help on the prompt gives a list of all the commands available.\n" +
+        supportCommands.put("help", "Help\nTyping help on the prompt gives a list of all the commands available.\n" +
             "Typing help, <commandname> gives details on how to use the particular command.");
         supportCommands.put("newflight", "Adding a new Flight.\nPurpose:\tAdd information about a new flight.\n" +
                 "Usage:\tnewflight,<id>,<flightnumber>,<flightSeats>,<flightprice>");
@@ -33,7 +33,7 @@ public class ClientCommandHandler extends NIOClient {
             System.out.println(supportCommands.get(commandName));
     }
 
-    void newflight (Vector<String> arguments) {
+    public void newflight (Vector<String> arguments) {
         if(arguments.size()!=5){
             System.out.println("Wrong Argument List");
             System.out.println(supportCommands.get("newflight"));
@@ -55,11 +55,11 @@ public class ClientCommandHandler extends NIOClient {
         }
     }
 
-    void help (Vector arguments) {
+    public void help (Vector<String> arguments) {
         if(arguments.size()==1)   //command was "help"
             listCommands();
         else if (arguments.size()==2)  //command was "help <commandname>"
-            listSpecific((String)arguments.elementAt(1));
+            listSpecific(arguments.elementAt(1));
         else  //wrong use of help command
             System.out.println("Improper use of help command. Type help or help, <commandname>");
     }

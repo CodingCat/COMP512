@@ -1,5 +1,6 @@
 package server.ResImpl;
 
+import message.ReservationMessage;
 import nio.Message;
 import server.ResInterface.NIOResourceManager;
 
@@ -10,6 +11,10 @@ import java.util.Vector;
 public class NIOResourceManagerImpl extends NIOResourceManager {
 
     protected RMHashtable m_itemHT = new RMHashtable();
+
+    public NIOResourceManagerImpl (String serverIP, int serverPort) {
+        super(serverIP, serverPort);
+    }
 
     // Reads a data item
     private RMItem readData( int id, String key ) {
@@ -334,10 +339,21 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
 
     @Override
     public void dispatch(Message msg) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        if (msg instanceof ReservationMessage) {
+            ReservationMessage rmsg = (ReservationMessage) msg;
+            switch (rmsg.getMessageType()) {
+                case ADD_FLIGHT_REQUEST:
+                    System.out.println("fuck");
+                    break;
+                default:
+                    System.out.println("unrecognizable message");
+            }
+        }
     }
 
     public static void main(String [] args) {
-
+        NIOResourceManagerImpl rm = new NIOResourceManagerImpl(args[0], Integer.parseInt(args[1]));
+        Thread rm_server_t = new Thread(rm);
+        rm_server_t.start();
     }
 }

@@ -6,7 +6,6 @@ import java.io.*;
 public class Message implements Serializable {
     //header part
     //8 byte
-    protected int messageID = -1;
     protected int messageLength = 8;
 
     //transactionID is used to identify the sponsor of the
@@ -15,10 +14,6 @@ public class Message implements Serializable {
 
     public int getTransactionID() {
         return transactionID;
-    }
-
-    public int getMessageID () {
-        return messageID;
     }
 
     public int getMessageLength () {
