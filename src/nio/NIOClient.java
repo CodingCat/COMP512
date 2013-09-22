@@ -40,7 +40,15 @@ public abstract class NIOClient implements Runnable {
      */
     public void send(Message msg) {
         writebuffer.add(msg);
-        toServerChannel.keyFor(clientSelector).interestOps(SelectionKey.OP_WRITE);
+        try {
+            String localIP = ((InetSocketAddress) toServerChannel.getLocalAddress()).
+                    getAddress().getHostAddress();
+            int localPort = ((InetSocketAddress) toServerChannel.getLocalAddress()).getPort();
+            msg.transactionIDs.add((localIP + ":" + localPort).hashCode());
+            toServerChannel.keyFor(clientSelector).interestOps(SelectionKey.OP_WRITE);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**

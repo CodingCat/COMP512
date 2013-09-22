@@ -4,6 +4,7 @@ import message.*;
 import nio.Message;
 import server.ResInterface.NIOResourceManager;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.Vector;
@@ -355,8 +356,9 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
                     QueryFlightRequest qfreq = (QueryFlightRequest) rmsg;
                     int seat = queryFlight(qfreq.getID(), qfreq.getFlightNum());
                     QueryFlightResponse qfres = new QueryFlightResponse(qfreq.getID(), qfreq.getFlightNum(), seat);
-                    qfres.transactionID = qfreq.transactionID;
+                    qfres.transactionIDs = (ArrayList<Integer>) qfreq.transactionIDs.clone();
                     reply(qfres);
+                    break;
                 case ADD_CAR_REQUEST:
                     AddCarRequest acreq = (AddCarRequest) rmsg;
                     addCars(acreq.getID(), acreq.getLocation(),

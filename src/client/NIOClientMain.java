@@ -31,21 +31,22 @@ public class NIOClientMain {
 
     private void dispatchCommand(String command) {
         Vector<String> arguments = parse(command);
-        String commandName = arguments.get(0);
-        //reflect to the function in ClientCommandHandler
-        System.out.println("commandName:" + commandName);
-        try {
-            Method method = cmdhandler.getClass().getMethod(
-                        commandName.toLowerCase(), arguments.getClass());
-            method.invoke(cmdhandler, arguments);
-        } catch (NoSuchMethodException e) {
-            System.out.println("no such a command");
-        } catch (InvocationTargetException e) {
-            System.out.println("invalid argument");
-        } catch (IllegalAccessException e) {
-            System.out.println("cannot access this method");
+        if (arguments.size() > 0) {
+            String commandName = arguments.get(0);
+            //reflect to the function in ClientCommandHandler
+            System.out.println("commandName:" + commandName);
+            try {
+                Method method = cmdhandler.getClass().getMethod(
+                            commandName.toLowerCase(), arguments.getClass());
+                method.invoke(cmdhandler, arguments);
+            } catch (NoSuchMethodException e) {
+                System.out.println("no such a command");
+            } catch (InvocationTargetException e) {
+                System.out.println("invalid argument");
+            } catch (IllegalAccessException e) {
+                System.out.println("cannot access this method");
+            }
         }
-
     }
 
     public void run() {

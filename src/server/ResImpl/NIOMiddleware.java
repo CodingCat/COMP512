@@ -103,7 +103,7 @@ public class NIOMiddleware extends NIOReactor {
                     forward("flight", rmsg);
                     break;
                 case QUERY_FLIGHT_RESPONSE:
-                    //TODO:
+                    reply(rmsg);
                     break;
                 case ADD_CAR_REQUEST:
                 case DELETE_CAR_REQUEST:

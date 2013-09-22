@@ -254,7 +254,7 @@ public class ClientCommandHandler extends NIOClient {
     }
 
     public void queryflight(Vector<String> arguments) {
-        if(arguments.size()!=3){
+        if(arguments.size() != 3){
             System.out.println("Wrong Argument List");
             System.out.println(supportCommands.get("queryflight"));
             return;
@@ -263,7 +263,7 @@ public class ClientCommandHandler extends NIOClient {
         System.out.println("Flight number: "+arguments.elementAt(2));
         try{
             int id = Integer.parseInt(arguments.elementAt(1));
-            int flightNum = Integer.getInteger(arguments.elementAt(2));
+            int flightNum = Integer.parseInt(arguments.elementAt(2));
             send(new QueryFlightRequest(id, flightNum));
         }
         catch(Exception e){
