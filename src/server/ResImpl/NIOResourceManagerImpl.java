@@ -2,6 +2,7 @@ package server.ResImpl;
 
 import message.AddCarRequest;
 import message.AddFlightRequest;
+import message.AddRoomRequest;
 import message.ReservationMessage;
 import nio.Message;
 import server.ResInterface.NIOResourceManager;
@@ -354,6 +355,9 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
                     addCars(acreq.getID(), acreq.getLocation(),
                             acreq.getCarnum(), acreq.getPrice());
                     break;
+                case ADD_ROOM_REQUEST:
+                    AddRoomRequest arreq = (AddRoomRequest) rmsg;
+                    addRooms(arreq.getID(), arreq.getLocation(), arreq.getRoomnum(), arreq.getPrice());
                 default:
                     System.out.println("unrecognizable message");
             }

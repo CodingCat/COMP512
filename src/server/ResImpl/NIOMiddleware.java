@@ -82,8 +82,10 @@ public class NIOMiddleware extends NIOReactor {
         //support single resource manager for each resource for now
         setClientEndPoint("flight",  xmlParser.getTuple2("flight").x,
                 xmlParser.getTuple2("flight").y);
-        setClientEndPoint("car",  xmlParser.getTuple2("flight").x,
+        setClientEndPoint("car",  xmlParser.getTuple2("car").x,
                 xmlParser.getTuple2("car").y);
+        setClientEndPoint("room",  xmlParser.getTuple2("room").x,
+                xmlParser.getTuple2("room").y);
     }
 
     @Override
@@ -97,6 +99,8 @@ public class NIOMiddleware extends NIOReactor {
                 case ADD_CAR_REQUEST:
                     forward("car", rmsg);
                     break;
+                case ADD_ROOM_REQUEST:
+                    forward("room", rmsg);
                 default:
                     break;
             }
@@ -106,7 +110,8 @@ public class NIOMiddleware extends NIOReactor {
 
 
     public static void main(String [] args) {
-        NIOMiddleware middleware = new NIOMiddleware(args[0], Integer.parseInt(args[1]),
+        NIOMiddleware middleware = new NIOMiddleware(args[0],
+                Integer.parseInt(args[1]),
                 args[2]);
         //setup resource managers
         //load the configuration file

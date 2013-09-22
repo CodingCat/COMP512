@@ -2,6 +2,7 @@ package client;
 
 import message.AddCarRequest;
 import message.AddFlightRequest;
+import message.AddRoomRequest;
 import nio.Message;
 import nio.NIOClient;
 
@@ -15,9 +16,59 @@ public class ClientCommandHandler extends NIOClient {
     public ClientCommandHandler(String serverip, int serverport) {
         super(serverip, serverport);
         supportCommands.put("help", "Help\nTyping help on the prompt gives a list of all the commands available.\n" +
-            "Typing help, <commandname> gives details on how to use the particular command.");
-        supportCommands.put("newflight", "Adding a new Flight.\nPurpose:\tAdd information about a new flight.\n" +
+                "Typing help, <commandname> gives details on how to use the particular command.");
+        supportCommands.put("newflight", "Adding a new Flight.\nPurpose:\n\tAdd information about a new flight.\n" +
                 "Usage:\tnewflight,<id>,<flightnumber>,<flightSeats>,<flightprice>");
+        supportCommands.put("newcar", "Adding a new Car.\nPurpose:\n\tAdd information about a new car location.\n" +
+                "Usage:\tnewcar,<id>,<location>,<numberofcars>,<pricepercar>");
+        supportCommands.put("newroom", "Adding a new Room.\nPurpose:\n\tAdd information about a new room location.\n" +
+                "Usage:\tnewroom,<id>,<location>,<numberofrooms>,<priceperroom>");
+        supportCommands.put("newcustomer", "Adding a new Customer.\nPurpose:\n\tGet the system to provide a new customer id. " +
+                "(same as adding a new customer)\n" +
+                "Usage:\tnewcustomer,<id>");
+        supportCommands.put("deleteflight", "Deleting a flight's information.\nPurpose:\n\tDelete a flight's information. " +
+                "Usage:\tdeleteflight,<id>,<flightnumber>");
+        supportCommands.put("deletecar", "Delete a Car.\nPurpose:\nDelete all cars from a location.\nUsage:\n" +
+                "Usage:\tdeletecar,<id>, <location>, <numCars>");
+        supportCommands.put("deleteroom", "Deleting a Room\nPurpose:\nDelete all rooms from a location.\n" +
+                "Usage:\tdeleteroom,<id>,<location>,<numRooms>");
+        supportCommands.put("deletecustomer", "Removing a customer\nPurpose:\nRemoving a customer from the database.\n" +
+                "Usage:\tdeletecustomer,<id>,<customerid>");
+        supportCommands.put("queryflight", "Querying flight.\nPurpose:\nObtain Seat information about a certain flight.\n" +
+                "Usage:\tqueryflight,<id>,<flightnumber>");
+        supportCommands.put("querycar", "Query a Car location.\nPurpose:\nObtain number of cars at a certain car location.\n" +
+                "Usage:\tquerycar,<id>,<location>");
+        supportCommands.put("queryroom", "Querying a Room Location.\nPurpose:\nObtain number of rooms at a certain room location.\n" +
+                "Usage:\tqueryroom,<id>,<location>");
+        supportCommands.put("qeurycustomer", "Querying Customer Information,\nPurpose:\nObtain information" +
+                " about a customer.\n" +
+                "Usage:\tquerycustomer,<id>,<customerid>");
+        supportCommands.put("queryflightprice", "Querying flight price.\nPurpose:\nObtain price information" +
+                " about a certain flight.\n" +
+                "Usage:\tqueryflightprice, <id>, <flightnumber>");
+        //UnsupportedOperationException
+        supportCommands.put("querycarprice", "Querying car price.\nPurpose:\nObtain price information" +
+                " about a certain car location.\n" +
+                "Usage:\tquerycarprice,<id>,<location>");
+        supportCommands.put("queryroomprice", "Querying Room price.\nPurpose:\nObtain price information" +
+                " about a certain room location.\n" +
+                "Usage:\tqueryroomprice,<id>,<location>");
+        supportCommands.put("reserveflight", "Reserve flight for a customer.\nPurpose:\nReserve a flight " +
+                "for a customer.\n" +
+                "Usage:\treserveflight,<id>,<customerid>,<flightnumber>");
+        supportCommands.put("reservecar", "Reserving a Car.\nPurpose:\nReserve a given number of cars " +
+                "for a customer at a particular location.\n" +
+                "Usage:\treservecar,<id>,<customerid>,<location>,<numberofCars>");
+        supportCommands.put("reserveroom", "Reserving a Room.\nPurpose:\nReserve a given number of rooms" +
+                " for a customer at a particular location.\n" +
+                "Usage:\treserveroom, <id>, <customerid>, <location>, <numberofRooms>");
+        supportCommands.put("itinerary", "Reserving an Itinerary\nPurpose:\nBook one or more flights. " +
+                "Also book zero or more cars/rooms at a location.\n" +
+                "Usage:\titinerary,<id>,<customerid>,<flightnumber1>....<flightnumberN>," +
+                "<LocationToBookCarsOrRooms>,<NumberOfCars>,<NumberOfRoom>");
+        supportCommands.put("quit", "Quitting client.\nPurpose:\nExit the client\nUsage:\tquit");
+        supportCommands.put("newcustomerid", "Creating new customer providing an id\tPurpose:\nCreates a " +
+                " new customer with the id provided\tUsage:\tnewcustomerid, <id>, <customerid>");
     }
 
     private void listCommands() {
@@ -32,6 +83,32 @@ public class ClientCommandHandler extends NIOClient {
             System.out.println("the interface does not support this command:" + commandName);
         else
             System.out.println(supportCommands.get(commandName));
+    }
+
+
+    public void newroom(Vector<String> arguments) {
+        if(arguments.size()!=5){
+            System.out.println("Wrong Argument List");
+            System.out.println(supportCommands.get("newroom"));
+            return;
+        }
+        System.out.println("Adding a new Room using id: "+arguments.elementAt(1));
+        System.out.println("Room Location: "+arguments.elementAt(2));
+        System.out.println("Add Number of Rooms: "+arguments.elementAt(3));
+        System.out.println("Set Price: "+arguments.elementAt(4));
+        try{
+            int id = Integer.parseInt(arguments.elementAt(1));
+            String location = arguments.elementAt(2);
+            int numRooms = Integer.parseInt(arguments.elementAt(3));
+            int price = Integer.parseInt(arguments.elementAt(4));
+            //send addroomrequest
+            send(new AddRoomRequest(id, location, numRooms, price));
+        }
+        catch(Exception e){
+            System.out.println("EXCEPTION:");
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public void newcar(Vector<String> arguments) {
