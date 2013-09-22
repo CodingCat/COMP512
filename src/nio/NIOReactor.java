@@ -42,7 +42,6 @@ public abstract class NIOReactor implements Runnable {
         }
     }
 
-
     protected void reply(Message msg) {
         try {
             int key = msg.transactionIDs.get(msg.transactionIDs.size() - 1);

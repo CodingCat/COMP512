@@ -102,9 +102,6 @@ public class NIOMiddleware extends NIOReactor {
                 case RESERVE_FLIGHT_REQUEST:
                     forward("flight", rmsg);
                     break;
-                case QUERY_FLIGHT_RESPONSE:
-                    reply(rmsg);
-                    break;
                 case ADD_CAR_REQUEST:
                 case DELETE_CAR_REQUEST:
                 case QUERY_CAR_REQUEST:
@@ -124,6 +121,15 @@ public class NIOMiddleware extends NIOReactor {
                 case DELETE_CUSTOMER_REQUEST:
                 case QUERY_CUSTOMER_REQUEST:
                     forward("customer", rmsg);
+                    break;
+                case QUERY_FLIGHTPRICE_RESPONSE:
+                case QUERY_CARPRICE_RESPONSE:
+                case QUERY_ROOMPRICE_RESPONSE:
+                case QUERY_FLIGHT_RESPONSE:
+                case QUERY_CAR_RESPONSE:
+                case QUERY_ROOM_RESPONSE:
+                case QUERY_CUSTOMER_RESPONSE:
+                    reply(rmsg);
                     break;
                 case RESERVE_ITINERARY_REQUEST:
                     forward("flight", rmsg);

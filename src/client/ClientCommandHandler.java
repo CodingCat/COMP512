@@ -121,6 +121,26 @@ public class ClientCommandHandler extends NIOClient {
         }
     }
 
+    public void querycustomer(Vector<String> arguments) {
+        if(arguments.size()!=3){
+            System.out.println("Wrong Argument List");
+            System.out.println(supportCommands.get("querycustomer"));
+            return;
+        }
+        System.out.println("Querying Customer information using id: "+arguments.elementAt(1));
+        System.out.println("Customer id: "+arguments.elementAt(2));
+        try{
+            int id = Integer.parseInt(arguments.elementAt(1));
+            int customerid = Integer.parseInt(arguments.elementAt(2));
+            send(new QueryCustomerRequest(id, customerid));
+        }
+        catch(Exception e){
+            System.out.println("EXCEPTION:");
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     public void newroom(Vector<String> arguments) {
         if(arguments.size() != 5){
             System.out.println("Wrong Argument List");
@@ -149,7 +169,7 @@ public class ClientCommandHandler extends NIOClient {
     public void deleteroom(Vector<String> arguments) {
         if(arguments.size()!=3){
             System.out.println("Wrong Argument List");
-            System.out.println(supportCommands.get("newroom"));
+            System.out.println(supportCommands.get("deleteroom"));
             return;
         }
         System.out.println("Deleting all rooms from a particular location  using id: "+arguments.elementAt(1));
@@ -158,6 +178,46 @@ public class ClientCommandHandler extends NIOClient {
             int id = Integer.parseInt(arguments.elementAt(1));
             String location = arguments.elementAt(2);
             send(new DelRoomRequest(id, location));
+        }
+        catch(Exception e){
+            System.out.println("EXCEPTION:");
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void queryroom(Vector<String> arguments) {
+        if(arguments.size()!=3){
+            System.out.println("Wrong Argument List");
+            System.out.println(supportCommands.get("queryroom"));
+            return;
+        }
+        System.out.println("Querying a room location using id: "+arguments.elementAt(1));
+        System.out.println("Room location: "+arguments.elementAt(2));
+        try{
+            int id = Integer.parseInt(arguments.elementAt(1));
+            String location = arguments.elementAt(2);
+            send(new QueryRoomRequest(id, location));
+        }
+        catch(Exception e){
+            System.out.println("EXCEPTION:");
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void queryroomprice(Vector<String> arguments) {
+        if(arguments.size()!=3){
+            System.out.println("Wrong Argument List");
+            System.out.println(supportCommands.get("queryroomprice"));
+            return;
+        }
+        System.out.println("Querying a room location using id: "+arguments.elementAt(1));
+        System.out.println("Room location: "+arguments.elementAt(2));
+        try{
+            int id = Integer.parseInt(arguments.elementAt(1));
+            String location = arguments.elementAt(2);
+            send(new QueryRoomPriceRequest(id, location));
         }
         catch(Exception e){
             System.out.println("EXCEPTION:");
@@ -194,7 +254,7 @@ public class ClientCommandHandler extends NIOClient {
     public void deletecar(Vector<String> arguments) {
         if(arguments.size()!=3){
             System.out.println("Wrong Argument List");
-            System.out.println(supportCommands.get("newflight"));
+            System.out.println(supportCommands.get("deletecar"));
             return;
         }
         System.out.println("Deleting the cars from a particular location  using id: "+arguments.elementAt(1));
@@ -203,6 +263,46 @@ public class ClientCommandHandler extends NIOClient {
             int id = Integer.parseInt(arguments.elementAt(1));
             String location = arguments.elementAt(2);
             send(new DelCarRequest(id, location));
+        }
+        catch(Exception e){
+            System.out.println("EXCEPTION:");
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void querycar(Vector<String> arguments) {
+        if(arguments.size()!=3){
+            System.out.println("Wrong Argument List");
+            System.out.println(supportCommands.get("querycar"));
+            return;
+        }
+        System.out.println("Querying a car location using id: "+arguments.elementAt(1));
+        System.out.println("Car location: "+arguments.elementAt(2));
+        try{
+            int id = Integer.parseInt(arguments.elementAt(1));
+            String location = arguments.elementAt(2);
+            send(new QueryCarRequest(id, location));
+        }
+        catch(Exception e){
+            System.out.println("EXCEPTION:");
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void querycarprice(Vector<String> arguments) {
+        if(arguments.size()!=3){
+            System.out.println("Wrong Argument List");
+            System.out.println(supportCommands.get("querycarprice"));
+            return;
+        }
+        System.out.println("Querying a car price using id: "+arguments.elementAt(1));
+        System.out.println("Car location: "+arguments.elementAt(2));
+        try{
+            int id = Integer.parseInt(arguments.elementAt(1));
+            String location = arguments.elementAt(2);
+            send(new QueryCarPriceRequest(id, location));
         }
         catch(Exception e){
             System.out.println("EXCEPTION:");
@@ -273,6 +373,26 @@ public class ClientCommandHandler extends NIOClient {
         }
     }
 
+    public void queryflightprice(Vector<String> arguments) {
+        if(arguments.size()!=3){
+            System.out.println("Wrong Argument List");
+            System.out.println(supportCommands.get("queryflightprice"));
+            return;
+        }
+        System.out.println("Querying a flight Price using id: "+arguments.elementAt(1));
+        System.out.println("Flight number: "+arguments.elementAt(2));
+        try{
+            int id = Integer.parseInt(arguments.elementAt(1));
+            int flightNum = Integer.parseInt(arguments.elementAt(2));
+            send(new QueryFlightPriceRequest(id, flightNum));
+        }
+        catch(Exception e){
+            System.out.println("EXCEPTION:");
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     public void help (Vector<String> arguments) {
         if(arguments.size()==1)   //command was "help"
             listCommands();
@@ -289,8 +409,38 @@ public class ClientCommandHandler extends NIOClient {
             switch (rmsg.getMessageType()) {
                 case QUERY_FLIGHT_RESPONSE:
                     QueryFlightResponse qfresponse = (QueryFlightResponse) rmsg;
-                    System.out.println("flight num:" + qfresponse.getFlightnumber() +
+                    System.out.println("flight id:" + qfresponse.getFlightnumber() +
                         " seat num:" + qfresponse.getSeat());
+                    break;
+                case QUERY_FLIGHTPRICE_RESPONSE:
+                    QueryFlightPriceResponse qfpresponse = (QueryFlightPriceResponse) rmsg;
+                    System.out.println("flight id:" + qfpresponse.getFlightNum() +
+                            " price:" + qfpresponse.getPrice());
+                    break;
+                case QUERY_CAR_RESPONSE:
+                    QueryCarResponse qcresponse = (QueryCarResponse) rmsg;
+                    System.out.println("car  location:" +
+                         qcresponse.getLocation() + " car_num:" + qcresponse.getCarNum());
+                    break;
+                case QUERY_CARPRICE_RESPONSE:
+                    QueryCarPriceResponse qcpresponse = (QueryCarPriceResponse) rmsg;
+                    System.out.println("car location:" + qcpresponse.getLocation() +
+                            " price:" + qcpresponse.getPrice());
+                    break;
+                case QUERY_ROOM_RESPONSE:
+                    QueryRoomResponse qrresponse = (QueryRoomResponse) rmsg;
+                    System.out.println("room  location:" +
+                            qrresponse.getLocation() + " room_num:" + qrresponse.getRoomnum());
+                    break;
+                case QUERY_ROOMPRICE_RESPONSE:
+                    QueryRoomPriceResponse qrpresponse = (QueryRoomPriceResponse) rmsg;
+                    System.out.println("room  location:" +
+                            qrpresponse.getLocation() + " room_price:" + qrpresponse.getPrice());
+                    break;
+                case QUERY_CUSTOMER_RESPONSE:
+                    QueryCustomerResponse qcuresponse = (QueryCustomerResponse) rmsg;
+                    System.out.println("customerID:" +
+                            qcuresponse.getCustomerid() + " bill:" + qcuresponse.getBill());
                     break;
                 default:
                     System.out.println("unrecognizable message");

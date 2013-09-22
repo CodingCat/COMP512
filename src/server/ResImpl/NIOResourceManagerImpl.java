@@ -359,6 +359,14 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
                     qfres.transactionIDs = (ArrayList<Integer>) qfreq.transactionIDs.clone();
                     reply(qfres);
                     break;
+                case QUERY_FLIGHTPRICE_REQUEST:
+                    QueryFlightPriceRequest qfpreq = (QueryFlightPriceRequest) rmsg;
+                    int price = queryFlightPrice(qfpreq.getID(), qfpreq.getFlightNum());
+                    QueryFlightPriceResponse qfpres = new QueryFlightPriceResponse(qfpreq.getID(),
+                            qfpreq.getFlightNum(), price);
+                    qfpres.transactionIDs = (ArrayList<Integer>) qfpreq.transactionIDs.clone();
+                    reply(qfpres);
+                    break;
                 case ADD_CAR_REQUEST:
                     AddCarRequest acreq = (AddCarRequest) rmsg;
                     addCars(acreq.getID(), acreq.getLocation(),
@@ -368,6 +376,20 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
                     DelCarRequest dcreq = (DelCarRequest) rmsg;
                     deleteCars(dcreq.getID(), dcreq.getLocation());
                     break;
+                case QUERY_CAR_REQUEST:
+                    QueryCarRequest qcreq = (QueryCarRequest) rmsg;
+                    QueryCarResponse qcres = new QueryCarResponse(qcreq.getID(), qcreq.getLocation(),
+                            queryCars(qcreq.getID(), qcreq.getLocation()));
+                    qcres.transactionIDs = (ArrayList<Integer>) qcreq.transactionIDs.clone();
+                    reply(qcres);
+                    break;
+                case QUERY_CARPRICE_REQUEST:
+                    QueryCarPriceRequest qcpreq = (QueryCarPriceRequest) rmsg;
+                    QueryCarPriceResponse qcpres = new QueryCarPriceResponse(qcpreq.getID(), qcpreq.getLocation(),
+                            queryCarsPrice(qcpreq.getID(), qcpreq.getLocation()));
+                    qcpres.transactionIDs = (ArrayList<Integer>) qcpreq.transactionIDs.clone();
+                    reply(qcpres);
+                    break;
                 case ADD_ROOM_REQUEST:
                     AddRoomRequest arreq = (AddRoomRequest) rmsg;
                     addRooms(arreq.getID(), arreq.getLocation(), arreq.getRoomnum(), arreq.getPrice());
@@ -376,6 +398,20 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
                     DelRoomRequest drreq = (DelRoomRequest) rmsg;
                     deleteRooms(drreq.getID(), drreq.getLocation());
                     break;
+                case QUERY_ROOM_REQUEST:
+                    QueryRoomRequest qrreq = (QueryRoomRequest) rmsg;
+                    QueryRoomResponse qrres = new QueryRoomResponse(qrreq.getID(), qrreq.getLocation(),
+                            queryRooms(qrreq.getID(), qrreq.getLocation()));
+                    qrres.transactionIDs = (ArrayList<Integer>) qrreq.transactionIDs.clone();
+                    reply(qrres);
+                    break;
+                case QUERY_ROOMPRICE_REQUEST:
+                    QueryRoomPriceRequest qrpreq = (QueryRoomPriceRequest) rmsg;
+                    QueryRoomPriceResponse qrpres = new QueryRoomPriceResponse(qrpreq.getID(), qrpreq.getLocation(),
+                            queryRoomsPrice(qrpreq.getID(), qrpreq.getLocation()));
+                    qrpres.transactionIDs = (ArrayList<Integer>) qrpreq.transactionIDs.clone();
+                    reply(qrpres);
+                    break;
                 case ADD_CUSTOMER_REQUEST:
                     AddCustomerRequest acureq = (AddCustomerRequest) rmsg;
                     newCustomer(acureq.getID());
@@ -383,6 +419,13 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
                 case DELETE_CUSTOMER_REQUEST:
                     DelCustomerRequest dcureq = (DelCustomerRequest) rmsg;
                     deleteCustomer(dcureq.getID(), dcureq.getCustomerid());
+                    break;
+                case QUERY_CUSTOMER_REQUEST:
+                    QueryCustomerRequest qcureq = (QueryCustomerRequest) rmsg;
+                    QueryCustomerResponse qcures = new QueryCustomerResponse(qcureq.getID(),
+                            qcureq.getCustomerid(), queryCustomerInfo(qcureq.getID(), qcureq.getCustomerid()));
+                    qcures.transactionIDs = (ArrayList<Integer>) qcureq.transactionIDs.clone();
+                    reply(qcures);
                     break;
                 default:
                     System.out.println("unrecognizable message");
