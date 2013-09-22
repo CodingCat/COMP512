@@ -1,6 +1,7 @@
 package client;
 
 import message.AddCarRequest;
+import message.AddCustomerRequest;
 import message.AddFlightRequest;
 import message.AddRoomRequest;
 import nio.Message;
@@ -85,9 +86,26 @@ public class ClientCommandHandler extends NIOClient {
             System.out.println(supportCommands.get(commandName));
     }
 
+    public void newcustomer(Vector<String> arguments) {
+        if(arguments.size() != 2){
+            System.out.println("Wrong Argument List");
+            System.out.println(supportCommands.get("newcustomer"));
+            return;
+        }
+        System.out.println("Adding a new Customer using id:"+arguments.elementAt(1));
+        try{
+            int id = Integer.parseInt(arguments.elementAt(1));
+            send(new AddCustomerRequest(id));
+        }
+        catch(Exception e){
+            System.out.println("EXCEPTION:");
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
     public void newroom(Vector<String> arguments) {
-        if(arguments.size()!=5){
+        if(arguments.size() != 5){
             System.out.println("Wrong Argument List");
             System.out.println(supportCommands.get("newroom"));
             return;

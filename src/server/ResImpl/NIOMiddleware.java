@@ -94,13 +94,38 @@ public class NIOMiddleware extends NIOReactor {
            ReservationMessage rmsg = (ReservationMessage) msg;
             switch (rmsg.getMessageType()) {
                 case ADD_FLIGHT_REQUEST:
+                case DELETE_FLIGHT_REQUEST:
+                case QUERY_FLIGHT_REQUEST:
+                case QUERY_FLIGHTPRICE_REQUEST:
+                case RESERVE_FLIGHT_REQUEST:
                     forward("flight", rmsg);
                     break;
                 case ADD_CAR_REQUEST:
+                case DELETE_CAR_REQUEST:
+                case QUERY_CAR_REQUEST:
+                case QUERY_CARPRICE_REQUEST:
+                case RESERVE_CAR_REQUEST:
                     forward("car", rmsg);
                     break;
                 case ADD_ROOM_REQUEST:
+                case DELETE_ROOM_REQUEST:
+                case QUERY_ROOMPRICE_REQUEST:
+                case QUERY_ROOM_REQUEST:
+                case RESERVE_ROOM_REQUEST:
                     forward("room", rmsg);
+                    break;
+                case ADD_CUSTOMER_REQUEST:
+                case ADD_CUSTOMER_ID_REQUEST:
+                case DELETE_CUSTOMER_REQUEST:
+                case QUERY_CUSTOMER_REQUEST:
+                    forward("customer", rmsg);
+                    break;
+                case RESERVE_ITINERARY_REQUEST:
+                    forward("flight", rmsg);
+                    forward("car", rmsg);
+                    forward("room", rmsg);
+                    forward("customer", rmsg);
+                    break;
                 default:
                     break;
             }
