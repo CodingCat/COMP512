@@ -347,18 +347,40 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
                     addFlight(afreq.getID(), afreq.getFlightNum(),
                             afreq.getFlightSeat(), afreq.getFlightPrice());
                     break;
+                case DELETE_FLIGHT_REQUEST:
+                    DelFlightRequest dfreq = (DelFlightRequest) rmsg;
+                    deleteFlight(dfreq.getID(), dfreq.getFlightNum());
+                    break;
+                case QUERY_FLIGHT_REQUEST:
+                    QueryFlightRequest qfreq = (QueryFlightRequest) rmsg;
+                    int seat = queryFlight(qfreq.getID(), qfreq.getFlightNum());
+                    QueryFlightResponse qfres = new QueryFlightResponse(qfreq.getID(), qfreq.getFlightNum(), seat);
+                    qfres.transactionID = qfreq.transactionID;
+                    reply(qfres);
                 case ADD_CAR_REQUEST:
                     AddCarRequest acreq = (AddCarRequest) rmsg;
                     addCars(acreq.getID(), acreq.getLocation(),
                             acreq.getCarnum(), acreq.getPrice());
                     break;
+                case DELETE_CAR_REQUEST:
+                    DelCarRequest dcreq = (DelCarRequest) rmsg;
+                    deleteCars(dcreq.getID(), dcreq.getLocation());
+                    break;
                 case ADD_ROOM_REQUEST:
                     AddRoomRequest arreq = (AddRoomRequest) rmsg;
                     addRooms(arreq.getID(), arreq.getLocation(), arreq.getRoomnum(), arreq.getPrice());
                     break;
+                case DELETE_ROOM_REQUEST:
+                    DelRoomRequest drreq = (DelRoomRequest) rmsg;
+                    deleteRooms(drreq.getID(), drreq.getLocation());
+                    break;
                 case ADD_CUSTOMER_REQUEST:
                     AddCustomerRequest acureq = (AddCustomerRequest) rmsg;
                     newCustomer(acureq.getID());
+                    break;
+                case DELETE_CUSTOMER_REQUEST:
+                    DelCustomerRequest dcureq = (DelCustomerRequest) rmsg;
+                    deleteCustomer(dcureq.getID(), dcureq.getCustomerid());
                     break;
                 default:
                     System.out.println("unrecognizable message");

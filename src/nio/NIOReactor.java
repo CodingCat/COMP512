@@ -45,7 +45,7 @@ public abstract class NIOReactor implements Runnable {
 
     protected void reply(Message msg) {
         try {
-            int key = msg.getTransactionID();
+            int key = msg.transactionIDs.get(msg.transactionIDs.size() - 1);
             System.out.println(key);
             SocketChannel socketChannel = clientConnections.get(key);
             synchronized (clientWriteBuffer) {
@@ -187,9 +187,11 @@ public abstract class NIOReactor implements Runnable {
             ByteBuffer ret = ByteBuffer.allocate(readbytes);
             ret.put(readBuffer.array(), 0, readbytes);
             Message inMsg =  Message.deserialize(ret.array());
-            String clientIP = ((InetSocketAddress) socketChannel.getRemoteAddress()).getAddress().getHostAddress();
+
+            String clientIP = ((InetSocketAddress) socketChannel.getRemoteAddress()).
+                        getAddress().getHostAddress();
             int clientPort = ((InetSocketAddress) socketChannel.getRemoteAddress()).getPort();
-            inMsg.transactionID = (clientIP + ":" + clientPort).hashCode();
+            inMsg.transactionIDs.add((clientIP + ":" + clientPort).hashCode());
             return inMsg;
         } catch (IOException e) {
             //key.cancel();
@@ -249,7 +251,7 @@ public abstract class NIOReactor implements Runnable {
                             if (selectkey.isWritable()) {
                                 forwardInternal(selectkey);
                             } else {
-                                System.out.println("unrecognizable op");
+                                dispatch(read(selectkey));
                             }
                         }
                     }

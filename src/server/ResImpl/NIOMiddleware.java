@@ -86,6 +86,8 @@ public class NIOMiddleware extends NIOReactor {
                 xmlParser.getTuple2("car").y);
         setClientEndPoint("room",  xmlParser.getTuple2("room").x,
                 xmlParser.getTuple2("room").y);
+        setClientEndPoint("customer", xmlParser.getTuple2("customer").x,
+                xmlParser.getTuple2("customer").y);
     }
 
     @Override
@@ -99,6 +101,9 @@ public class NIOMiddleware extends NIOReactor {
                 case QUERY_FLIGHTPRICE_REQUEST:
                 case RESERVE_FLIGHT_REQUEST:
                     forward("flight", rmsg);
+                    break;
+                case QUERY_FLIGHT_RESPONSE:
+                    //TODO:
                     break;
                 case ADD_CAR_REQUEST:
                 case DELETE_CAR_REQUEST:

@@ -36,11 +36,10 @@ public class NIOClientMain {
         System.out.println("commandName:" + commandName);
         try {
             Method method = cmdhandler.getClass().getMethod(
-                        commandName, arguments.getClass());
+                        commandName.toLowerCase(), arguments.getClass());
             method.invoke(cmdhandler, arguments);
         } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-            System.out.println("no such a method");
+            System.out.println("no such a command");
         } catch (InvocationTargetException e) {
             System.out.println("invalid argument");
         } catch (IllegalAccessException e) {

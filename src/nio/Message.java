@@ -2,6 +2,7 @@ package nio;
 
 
 import java.io.*;
+import java.util.ArrayList;
 
 public class Message implements Serializable {
     //header part
@@ -10,11 +11,7 @@ public class Message implements Serializable {
 
     //transactionID is used to identify the sponsor of the
     //message
-    public int transactionID = -1;
-
-    public int getTransactionID() {
-        return transactionID;
-    }
+    public ArrayList<Integer> transactionIDs = new ArrayList<Integer>();
 
     public int getMessageLength () {
         return messageLength;
