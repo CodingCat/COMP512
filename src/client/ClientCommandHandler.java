@@ -101,6 +101,26 @@ public class ClientCommandHandler extends NIOClient {
         }
     }
 
+    public void newcustomerID(Vector<String> arguments) {
+        if(arguments.size() != 3){
+            System.out.println("Wrong Argument List");
+            System.out.println(supportCommands.get("newcustomerid"));
+            return;
+        }
+        System.out.println("Adding a new Customer using id:"+arguments.elementAt(1) +
+                " and cid " +arguments.elementAt(2));
+        try{
+            int id = Integer.parseInt(arguments.elementAt(1));
+            int cid = Integer.parseInt(arguments.elementAt(2));
+            send(new AddCustomerWithIDRequest(id, cid));
+        }
+        catch(Exception e){
+            System.out.println("EXCEPTION:");
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     public void deletecustomer(Vector<String> arguments) {
         if(arguments.size()!=3){
             System.out.println("Wrong Argument List");
@@ -400,6 +420,11 @@ public class ClientCommandHandler extends NIOClient {
             listSpecific(arguments.elementAt(1));
         else  //wrong use of help command
             System.out.println("Improper use of help command. Type help or help, <commandname>");
+    }
+
+    public void quit(Vector<String> arguments) {
+        System.out.println("Quitting client.");
+        System.exit(1);
     }
 
     @Override

@@ -416,6 +416,10 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
                     AddCustomerRequest acureq = (AddCustomerRequest) rmsg;
                     newCustomer(acureq.getID());
                     break;
+                case ADD_CUSTOMER_ID_REQUEST:
+                    AddCustomerWithIDRequest acuidreq = (AddCustomerWithIDRequest) rmsg;
+                    newCustomer(acuidreq.getID(), acuidreq.getCustomerid());
+                    break;
                 case DELETE_CUSTOMER_REQUEST:
                     DelCustomerRequest dcureq = (DelCustomerRequest) rmsg;
                     deleteCustomer(dcureq.getID(), dcureq.getCustomerid());
