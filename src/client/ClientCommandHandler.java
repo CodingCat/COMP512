@@ -38,7 +38,7 @@ public class ClientCommandHandler extends NIOClient {
                 "Usage:\tquerycar,<id>,<location>");
         supportCommands.put("queryroom", "Querying a Room Location.\nPurpose:\nObtain number of rooms at a certain room location.\n" +
                 "Usage:\tqueryroom,<id>,<location>");
-        supportCommands.put("qeurycustomer", "Querying Customer Information,\nPurpose:\nObtain information" +
+        supportCommands.put("querycustomer", "Querying Customer Information,\nPurpose:\nObtain information" +
                 " about a customer.\n" +
                 "Usage:\tquerycustomer,<id>,<customerid>");
         supportCommands.put("queryflightprice", "Querying flight price.\nPurpose:\nObtain price information" +
