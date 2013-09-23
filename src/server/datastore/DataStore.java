@@ -333,19 +333,13 @@ public class DataStore extends NIOReactor {
                 deleteFlight(dfreq.getID(), dfreq.getFlightNum());
                 break;
             case QUERY_FLIGHT_REQUEST:
+            case QUERY_FLIGHTPRICE_REQUEST:
                 QueryFlightRequest qfreq = (QueryFlightRequest) rmsg;
                 int seat = queryFlight(qfreq.getID(), qfreq.getFlightNum());
-                QueryFlightResponse qfres = new QueryFlightResponse(qfreq.getID(), qfreq.getFlightNum(), seat);
+                int price = queryFlightPrice(qfreq.getID(), qfreq.getFlightNum());
+                QueryFlightResponse qfres = new QueryFlightResponse(qfreq.getID(), qfreq.getFlightNum(), seat, price);
                 qfres.transactionIDs = (ArrayList<Integer>) qfreq.transactionIDs.clone();
                 reply(qfres);
-                break;
-            case QUERY_FLIGHTPRICE_REQUEST:
-                QueryFlightPriceRequest qfpreq = (QueryFlightPriceRequest) rmsg;
-                int price = queryFlightPrice(qfpreq.getID(), qfpreq.getFlightNum());
-                QueryFlightPriceResponse qfpres = new QueryFlightPriceResponse(qfpreq.getID(),
-                        qfpreq.getFlightNum(), price);
-                qfpres.transactionIDs = (ArrayList<Integer>) qfpreq.transactionIDs.clone();
-                reply(qfpres);
                 break;
             case ADD_CAR_REQUEST:
                 AddCarRequest acreq = (AddCarRequest) rmsg;
@@ -357,18 +351,14 @@ public class DataStore extends NIOReactor {
                 deleteCars(dcreq.getID(), dcreq.getLocation());
                 break;
             case QUERY_CAR_REQUEST:
+            case QUERY_CARPRICE_REQUEST:
                 QueryCarRequest qcreq = (QueryCarRequest) rmsg;
+                int carnum = queryCars(qcreq.getID(), qcreq.getLocation());
+                int carprice = queryCarsPrice(qcreq.getID(), qcreq.getLocation());
                 QueryCarResponse qcres = new QueryCarResponse(qcreq.getID(), qcreq.getLocation(),
-                        queryCars(qcreq.getID(), qcreq.getLocation()));
+                        carnum, carprice);
                 qcres.transactionIDs = (ArrayList<Integer>) qcreq.transactionIDs.clone();
                 reply(qcres);
-                break;
-            case QUERY_CARPRICE_REQUEST:
-                QueryCarPriceRequest qcpreq = (QueryCarPriceRequest) rmsg;
-                QueryCarPriceResponse qcpres = new QueryCarPriceResponse(qcpreq.getID(), qcpreq.getLocation(),
-                        queryCarsPrice(qcpreq.getID(), qcpreq.getLocation()));
-                qcpres.transactionIDs = (ArrayList<Integer>) qcpreq.transactionIDs.clone();
-                reply(qcpres);
                 break;
             case ADD_ROOM_REQUEST:
                 AddRoomRequest arreq = (AddRoomRequest) rmsg;
@@ -379,18 +369,14 @@ public class DataStore extends NIOReactor {
                 deleteRooms(drreq.getID(), drreq.getLocation());
                 break;
             case QUERY_ROOM_REQUEST:
+            case QUERY_ROOMPRICE_REQUEST:
                 QueryRoomRequest qrreq = (QueryRoomRequest) rmsg;
+                int roomnum = queryRooms(qrreq.getID(), qrreq.getLocation());
+                int roomprice = queryRoomsPrice(qrreq.getID(), qrreq.getLocation());
                 QueryRoomResponse qrres = new QueryRoomResponse(qrreq.getID(), qrreq.getLocation(),
-                        queryRooms(qrreq.getID(), qrreq.getLocation()));
+                        roomnum, roomprice);
                 qrres.transactionIDs = (ArrayList<Integer>) qrreq.transactionIDs.clone();
                 reply(qrres);
-                break;
-            case QUERY_ROOMPRICE_REQUEST:
-                QueryRoomPriceRequest qrpreq = (QueryRoomPriceRequest) rmsg;
-                QueryRoomPriceResponse qrpres = new QueryRoomPriceResponse(qrpreq.getID(), qrpreq.getLocation(),
-                        queryRoomsPrice(qrpreq.getID(), qrpreq.getLocation()));
-                qrpres.transactionIDs = (ArrayList<Integer>) qrpreq.transactionIDs.clone();
-                reply(qrpres);
                 break;
             case ADD_CUSTOMER_REQUEST:
                 AddCustomerRequest acureq = (AddCustomerRequest) rmsg;

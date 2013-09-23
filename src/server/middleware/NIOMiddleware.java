@@ -1,4 +1,4 @@
-package server.ResImpl;
+package server.middleware;
 
 import message.ReservationMessage;
 import nio.Message;

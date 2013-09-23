@@ -227,23 +227,7 @@ public class ClientCommandHandler extends NIOClient {
     }
 
     public void queryroomprice(Vector<String> arguments) {
-        if(arguments.size()!=3){
-            System.out.println("Wrong Argument List");
-            System.out.println(supportCommands.get("queryroomprice"));
-            return;
-        }
-        System.out.println("Querying a room location using id: "+arguments.elementAt(1));
-        System.out.println("Room location: "+arguments.elementAt(2));
-        try{
-            int id = Integer.parseInt(arguments.elementAt(1));
-            String location = arguments.elementAt(2);
-            send(new QueryRoomPriceRequest(id, location));
-        }
-        catch(Exception e){
-            System.out.println("EXCEPTION:");
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-        }
+        queryroom(arguments);
     }
 
     public void newcar(Vector<String> arguments) {
@@ -312,23 +296,7 @@ public class ClientCommandHandler extends NIOClient {
     }
 
     public void querycarprice(Vector<String> arguments) {
-        if(arguments.size()!=3){
-            System.out.println("Wrong Argument List");
-            System.out.println(supportCommands.get("querycarprice"));
-            return;
-        }
-        System.out.println("Querying a car price using id: "+arguments.elementAt(1));
-        System.out.println("Car location: "+arguments.elementAt(2));
-        try{
-            int id = Integer.parseInt(arguments.elementAt(1));
-            String location = arguments.elementAt(2);
-            send(new QueryCarPriceRequest(id, location));
-        }
-        catch(Exception e){
-            System.out.println("EXCEPTION:");
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-        }
+        querycar(arguments);
     }
 
     public void newflight (Vector<String> arguments) {
@@ -394,17 +362,23 @@ public class ClientCommandHandler extends NIOClient {
     }
 
     public void queryflightprice(Vector<String> arguments) {
-        if(arguments.size()!=3){
+        queryflight(arguments);
+    }
+
+    public void reserveflight(Vector<String> arguments) {
+        if(arguments.size() != 4){
             System.out.println("Wrong Argument List");
-            System.out.println(supportCommands.get("queryflightprice"));
+            System.out.println(supportCommands.get("reserveflight"));
             return;
         }
-        System.out.println("Querying a flight Price using id: "+arguments.elementAt(1));
-        System.out.println("Flight number: "+arguments.elementAt(2));
+        System.out.println("Reserving a seat on a flight using id: "+arguments.elementAt(1));
+        System.out.println("Customer id: "+arguments.elementAt(2));
+        System.out.println("Flight number: "+arguments.elementAt(3));
         try{
             int id = Integer.parseInt(arguments.elementAt(1));
-            int flightNum = Integer.parseInt(arguments.elementAt(2));
-            send(new QueryFlightPriceRequest(id, flightNum));
+            int customer = Integer.parseInt(arguments.elementAt(2));
+            int flightNum = Integer.parseInt(arguments.elementAt(3));
+            send(new ReserveFlightRequest(id, customer, flightNum));
         }
         catch(Exception e){
             System.out.println("EXCEPTION:");
@@ -433,34 +407,24 @@ public class ClientCommandHandler extends NIOClient {
             ReservationMessage rmsg = (ReservationMessage) msg;
             switch (rmsg.getMessageType()) {
                 case QUERY_FLIGHT_RESPONSE:
+                case QUERY_FLIGHTPRICE_RESPONSE:
                     QueryFlightResponse qfresponse = (QueryFlightResponse) rmsg;
                     System.out.println("flight id:" + qfresponse.getFlightnumber() +
-                        " seat num:" + qfresponse.getSeat());
-                    break;
-                case QUERY_FLIGHTPRICE_RESPONSE:
-                    QueryFlightPriceResponse qfpresponse = (QueryFlightPriceResponse) rmsg;
-                    System.out.println("flight id:" + qfpresponse.getFlightNum() +
-                            " price:" + qfpresponse.getPrice());
+                        " seat num:" + qfresponse.getSeat() + " price:" + qfresponse.getPrice());
                     break;
                 case QUERY_CAR_RESPONSE:
+                case QUERY_CARPRICE_RESPONSE:
                     QueryCarResponse qcresponse = (QueryCarResponse) rmsg;
                     System.out.println("car  location:" +
-                         qcresponse.getLocation() + " car_num:" + qcresponse.getCarNum());
-                    break;
-                case QUERY_CARPRICE_RESPONSE:
-                    QueryCarPriceResponse qcpresponse = (QueryCarPriceResponse) rmsg;
-                    System.out.println("car location:" + qcpresponse.getLocation() +
-                            " price:" + qcpresponse.getPrice());
+                         qcresponse.getLocation() + " car_num:" + qcresponse.getCarNum() + " price:" +
+                        qcresponse.getPrice());
                     break;
                 case QUERY_ROOM_RESPONSE:
+                case QUERY_ROOMPRICE_RESPONSE:
                     QueryRoomResponse qrresponse = (QueryRoomResponse) rmsg;
                     System.out.println("room  location:" +
-                            qrresponse.getLocation() + " room_num:" + qrresponse.getRoomnum());
-                    break;
-                case QUERY_ROOMPRICE_RESPONSE:
-                    QueryRoomPriceResponse qrpresponse = (QueryRoomPriceResponse) rmsg;
-                    System.out.println("room  location:" +
-                            qrpresponse.getLocation() + " room_price:" + qrpresponse.getPrice());
+                            qrresponse.getLocation() + " room_num:" + qrresponse.getRoomnum() +
+                        "room_price:" + qrresponse.getRoomprice());
                     break;
                 case QUERY_CUSTOMER_RESPONSE:
                     QueryCustomerResponse qcuresponse = (QueryCustomerResponse) rmsg;

@@ -5,12 +5,14 @@ public class QueryFlightResponse extends ReservationMessage {
     private int id;
     private int flightnumber;
     private int seat;
+    private int price;
 
-    public QueryFlightResponse(int mid, int fnumber, int seatnum) {
+    public QueryFlightResponse(int mid, int fnumber, int seatnum, int pr) {
         type = MessageType.QUERY_FLIGHT_RESPONSE;
         id = mid;
         flightnumber = fnumber;
         seat = seatnum;
+        price = pr;
     }
 
     public int getID() {
@@ -23,5 +25,9 @@ public class QueryFlightResponse extends ReservationMessage {
 
     public int getSeat() {
         return seat;
+    }
+
+    public int getPrice() {
+        return price;
     }
 }

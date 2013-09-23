@@ -2,19 +2,18 @@ package server.ResImpl;
 
 import message.*;
 import nio.Message;
-import server.ResInterface.NIOResourceManager;
+import nio.NIOReactor;
 import util.XmlParser;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Enumeration;
-import java.util.Vector;
 
-public class NIOResourceManagerImpl extends NIOResourceManager {
+public class NIOResourceManager extends NIOReactor{
 
     protected RMHashtable cache_store = new RMHashtable();
 
-    public NIOResourceManagerImpl (String serverIP, int serverPort, String confPath) {
+    public NIOResourceManager(String serverIP, int serverPort, String confPath) {
         super(serverIP, serverPort);
 
         XmlParser xmlParser = new XmlParser(confPath);
@@ -42,40 +41,6 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
     protected RMItem removeData(int id, String key){
         synchronized(cache_store){
             return (RMItem) cache_store.remove(key);
-        }
-    }
-
-    // reserve an item
-    protected boolean reserveItem(int id, int customerID, String key, String location){
-        Trace.info("RM::reserveItem( " + id + ", customer=" + customerID + ", " +key+ ", "+location+" ) called" );
-        // Read customer object if it exists (and read lock it)
-        Customer cust = (Customer) readData( id, Customer.getKey(customerID) );
-        if( cust == null ) {
-            Trace.warn("RM::reserveCar( " + id + ", " + customerID + ", " + key + ", "+location +
-                    ")  failed--customer doesn't exist" );
-            return false;
-        }
-
-        // check if the item is available
-        ReservableItem item = (ReservableItem)readData(id, key);
-        if(item==null){
-            Trace.warn("RM::reserveItem( " + id + ", " + customerID + ", " + key+", " +location +
-                    ") failed--item doesn't exist" );
-            return false;
-        }else if(item.getCount()==0){
-            Trace.warn("RM::reserveItem( " + id + ", " + customerID + ", " + key+", " + location +
-                    ") failed--No more items" );
-            return false;
-        }else{
-            cust.reserve( key, location, item.getPrice());
-            writeData( id, cust.getKey(), cust );
-
-            // decrease the number of available items in the storage
-            item.setCount(item.getCount() - 1);
-            item.setReserved(item.getReserved()+1);
-
-            Trace.info("RM::reserveItem( " + id + ", " + customerID + ", " + key + ", " +location+") succeeded" );
-            return true;
         }
     }
 
@@ -126,31 +91,16 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
         } // if
     }
 
-    @Override
     public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) {
         Trace.info("RM::addFlight(" + id + ", " + flightNum + ", $" +
                 flightPrice + ", " + flightSeats + ") called" );
-        Flight curObj = (Flight) readData( id, Flight.getKey(flightNum) );
-        if( curObj == null ) {
-            // doesn't exist...add it
-            Flight newObj = new Flight( flightNum, flightSeats, flightPrice );
-            writeData( id, newObj.getKey(), newObj );
-            Trace.info("RM::addFlight(" + id + ") created new flight " + flightNum + ", seats=" +
-                    flightSeats + ", price=$" + flightPrice );
-        } else {
-            // add seats to existing flight and update the price...
-            curObj.setCount( curObj.getCount() + flightSeats );
-            if( flightPrice > 0 ) {
-                curObj.setPrice( flightPrice );
-            } // if
-            writeData( id, curObj.getKey(), curObj );
-            Trace.info("RM::addFlight(" + id + ") modified existing flight " + flightNum +
-                    ", seats=" + curObj.getCount() + ", price=$" + flightPrice );
-        } // else
+        Flight newObj = new Flight(flightNum, flightSeats, flightPrice);
+        writeData(id, newObj.getKey(), newObj);
+        Trace.info("RM::addFlight(" + id + ") created new flight " + flightNum + ", seats=" +
+                flightSeats + ", price=$" + flightPrice);
         return true;
     }
 
-    @Override
     public boolean addCars(int id, String location, int numCars, int price) {
         Trace.info("RM::addCars(" + id + ", " + location + ", " + numCars + ", $" + price + ") called" );
         Car curObj = (Car) readData( id, Car.getKey(location) );
@@ -173,7 +123,6 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
         return true;
     }
 
-    @Override
     public boolean addRooms(int id, String location, int numRooms, int price) {
         Trace.info("RM::addRooms(" + id + ", " + location + ", " + numRooms + ", $" + price + ") called" );
         Hotel curObj = (Hotel) readData( id, Hotel.getKey(location) );
@@ -196,7 +145,6 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
         return(true);
     }
 
-    @Override
     public int newCustomer(int id) {
         Trace.info("INFO: RM::newCustomer(" + id + ") called" );
         // Generate a globally unique ID for the new customer
@@ -209,7 +157,6 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
         return cid;
     }
 
-    @Override
     public boolean newCustomer(int id, int customerID) {
         Trace.info("INFO: RM::newCustomer(" + id + ", " + customerID + ") called" );
         Customer cust = (Customer) readData( id, Customer.getKey(customerID) );
@@ -232,22 +179,18 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
      *
      * @return success.
      */
-    @Override
     public boolean deleteFlight(int id, int flightNum) {
         return deleteItem(id, Flight.getKey(flightNum));
     }
 
-    @Override
     public boolean deleteCars(int id, String location) {
         return deleteItem(id, Car.getKey(location));
     }
 
-    @Override
     public boolean deleteRooms(int id, String location) {
         return deleteItem(id, Hotel.getKey(location));
     }
 
-    @Override
     public boolean deleteCustomer(int id, int customerID) {
         Trace.info("RM::deleteCustomer(" + id + ", " + customerID + ") called" );
         Customer cust = (Customer) readData( id, Customer.getKey(customerID) );
@@ -277,22 +220,18 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
         } // if
     }
 
-    @Override
     public int queryFlight(int id, int flightNumber) {
         return queryNum(id, Flight.getKey(flightNumber));
     }
 
-    @Override
     public int queryCars(int id, String location) {
         return queryNum(id, Car.getKey(location));
     }
 
-    @Override
     public int queryRooms(int id, String location) {
         return queryNum(id, Hotel.getKey(location));
     }
 
-    @Override
     public String queryCustomerInfo(int id, int customerID) {
         Trace.info("RM::queryCustomerInfo(" + id + ", " + customerID + ") called" );
         Customer cust = (Customer) readData( id, Customer.getKey(customerID) );
@@ -307,47 +246,18 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
         } // if
     }
 
-    @Override
     public int queryFlightPrice(int id, int flightNumber) {
         return queryPrice(id, Flight.getKey(flightNumber));
     }
 
-    @Override
     public int queryCarsPrice(int id, String location) {
         return queryPrice(id, Car.getKey(location));
     }
 
-    @Override
     public int queryRoomsPrice(int id, String location) {
         return queryPrice(id, Hotel.getKey(location));
     }
 
-    @Override
-    public boolean reserveFlight(int id, int customerID, int flightNumber) {
-        return reserveItem(id, customerID, Flight.getKey(flightNumber),
-                String.valueOf(flightNumber));
-    }
-
-    @Override
-    public boolean reserveCar(int id, int customerID, String location) {
-        return reserveItem(id, customerID, Car.getKey(location), location);
-    }
-
-    @Override
-    public boolean reserveRoom(int id, int customerID, String location) {
-        return reserveItem(id, customerID, Hotel.getKey(location), location);
-    }
-
-    @Override
-    public boolean itinerary(int id, int customer, Vector flightNumbers,
-                             String location, boolean Car, boolean Room) {
-        for (Object obj : flightNumbers) {
-            reserveFlight(id, customer, (Integer) obj);
-        }
-        if (Car) reserveCar(id, customer, location);
-        if (Room) reserveRoom(id, customer, location);
-        return false;
-    }
 
     @Override
     public void dispatch(Message msg) {
@@ -366,29 +276,18 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
                     forward("data", rmsg);
                     break;
                 case QUERY_FLIGHT_REQUEST:
+                case QUERY_FLIGHTPRICE_REQUEST:
                     QueryFlightRequest qfreq = (QueryFlightRequest) rmsg;
                     int seat = queryFlight(qfreq.getID(), qfreq.getFlightNum());
-                    if (seat != -1) {
+                    int price = queryFlightPrice(qfreq.getID(), qfreq.getFlightNum());
+                    if (seat != -1 && price != -1) {
                         QueryFlightResponse qfres = new QueryFlightResponse(qfreq.getID(),
-                                qfreq.getFlightNum(), seat);
+                                qfreq.getFlightNum(), seat, price);
                         qfres.transactionIDs = (ArrayList<Integer>) qfreq.transactionIDs.clone();
                         reply(qfres);
                     } else {
                         //cache miss
                         forward("data", qfreq);
-                    }
-                    break;
-                case QUERY_FLIGHTPRICE_REQUEST:
-                    QueryFlightPriceRequest qfpreq = (QueryFlightPriceRequest) rmsg;
-                    int price = queryFlightPrice(qfpreq.getID(), qfpreq.getFlightNum());
-                    if (price != -1) {
-                        QueryFlightPriceResponse qfpres = new QueryFlightPriceResponse(qfpreq.getID(),
-                                qfpreq.getFlightNum(), price);
-                        qfpres.transactionIDs = (ArrayList<Integer>) qfpreq.transactionIDs.clone();
-                        reply(qfpres);
-                    } else {
-                        //cache miss
-                        forward("data", qfpreq);
                     }
                     break;
                 case ADD_CAR_REQUEST:
@@ -403,27 +302,17 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
                     forward("data", dcreq);
                     break;
                 case QUERY_CAR_REQUEST:
+                case QUERY_CARPRICE_REQUEST:
                     QueryCarRequest qcreq = (QueryCarRequest) rmsg;
                     int carnumber = queryCars(qcreq.getID(), qcreq.getLocation());
-                    if (carnumber != -1) {
+                    int carprice = queryCarsPrice(qcreq.getID(), qcreq.getLocation());
+                    if (carnumber != -1 && carprice != -1) {
                         QueryCarResponse qcres = new QueryCarResponse(qcreq.getID(), qcreq.getLocation(),
-                                carnumber);
+                                carnumber, carprice);
                         qcres.transactionIDs = (ArrayList<Integer>) qcreq.transactionIDs.clone();
                         reply(qcres);
                     } else {
                         forward("data", rmsg);
-                    }
-                    break;
-                case QUERY_CARPRICE_REQUEST:
-                    QueryCarPriceRequest qcpreq = (QueryCarPriceRequest) rmsg;
-                    int carprice = queryCarsPrice(qcpreq.getID(), qcpreq.getLocation());
-                    if (carprice != -1) {
-                        QueryCarPriceResponse qcpres = new QueryCarPriceResponse(qcpreq.getID(), qcpreq.getLocation(),
-                                carprice);
-                        qcpres.transactionIDs = (ArrayList<Integer>) qcpreq.transactionIDs.clone();
-                        reply(qcpres);
-                    } else {
-                        forward("data", qcpreq);
                     }
                     break;
                 case ADD_ROOM_REQUEST:
@@ -437,25 +326,15 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
                     forward("data", rmsg);
                     break;
                 case QUERY_ROOM_REQUEST:
+                case QUERY_ROOMPRICE_REQUEST:
                     QueryRoomRequest qrreq = (QueryRoomRequest) rmsg;
                     int roomnum = queryRooms(qrreq.getID(), qrreq.getLocation());
-                    if (roomnum != -1) {
+                    int roomprice = queryRoomsPrice(qrreq.getID(), qrreq.getLocation());
+                    if (roomnum != -1 && roomprice != -1) {
                         QueryRoomResponse qrres = new QueryRoomResponse(qrreq.getID(), qrreq.getLocation(),
-                                roomnum);
+                                roomnum, roomprice);
                         qrres.transactionIDs = (ArrayList<Integer>) qrreq.transactionIDs.clone();
                         reply(qrres);
-                    } else {
-                        forward("data", rmsg);
-                    }
-                    break;
-                case QUERY_ROOMPRICE_REQUEST:
-                    QueryRoomPriceRequest qrpreq = (QueryRoomPriceRequest) rmsg;
-                    int roomprice = queryRoomsPrice(qrpreq.getID(), qrpreq.getLocation());
-                    if (roomprice != -1) {
-                        QueryRoomPriceResponse qrpres = new QueryRoomPriceResponse(qrpreq.getID(), qrpreq.getLocation(),
-                                roomprice);
-                        qrpres.transactionIDs = (ArrayList<Integer>) qrpreq.transactionIDs.clone();
-                        reply(qrpres);
                     } else {
                         forward("data", rmsg);
                     }
@@ -484,8 +363,16 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
                 case QUERY_CUSTOMER_RESPONSE:
                 case QUERY_ROOM_RESPONSE:
                 case QUERY_ROOMPRICE_RESPONSE:
+                    //write cache
+                    addCacheEntry(rmsg);
                     //return back to middleware
                     reply(rmsg);
+                    break;
+                case RESERVE_FLIGHT_REQUEST:
+                case RESERVE_CAR_REQUEST:
+                case RESERVE_ROOM_REQUEST:
+                case RESERVE_ITINERARY_REQUEST:
+                    forward("data", rmsg);
                     break;
                 default:
                     System.out.println("unrecognizable message");
@@ -493,8 +380,20 @@ public class NIOResourceManagerImpl extends NIOResourceManager {
         }
     }
 
+    private void addCacheEntry(ReservationMessage rmsg) {
+        switch (rmsg.getMessageType()) {
+            case QUERY_FLIGHT_RESPONSE:
+            case QUERY_FLIGHTPRICE_RESPONSE:
+                QueryFlightResponse qfq = (QueryFlightResponse) rmsg;
+                addFlight(qfq.getID(), qfq.getFlightnumber(), qfq.getSeat(), qfq.getPrice());
+                break;
+            default:
+                break;
+        }
+    }
+
     public static void main(String [] args) {
-        NIOResourceManagerImpl rm = new NIOResourceManagerImpl(args[0], Integer.parseInt(args[1]), args[2]);
+        NIOResourceManager rm = new NIOResourceManager(args[0], Integer.parseInt(args[1]), args[2]);
         Thread rm_server_t = new Thread(rm);
         rm_server_t.start();
     }
