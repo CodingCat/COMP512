@@ -323,162 +323,164 @@ public class NIODataStore extends NIOReactor {
 
     @Override
     public void dispatch(Message msg) {
-        ReservationMessage rmsg = (ReservationMessage) msg;
-        switch (rmsg.getMessageType()) {
-            case ADD_FLIGHT_REQUEST:
-                AddFlightRequest afreq = (AddFlightRequest) rmsg;
-                addFlight(afreq.getID(), afreq.getFlightNum(),
-                        afreq.getFlightSeat(), afreq.getFlightPrice());
-                break;
-            case DELETE_FLIGHT_REQUEST:
-                DelFlightRequest dfreq = (DelFlightRequest) rmsg;
-                deleteFlight(dfreq.getID(), dfreq.getFlightNum());
-                break;
-            case QUERY_FLIGHT_REQUEST:
-            case QUERY_FLIGHTPRICE_REQUEST:
-                QueryFlightRequest qfreq = (QueryFlightRequest) rmsg;
-                int seat = queryFlight(qfreq.getID(), qfreq.getFlightNum());
-                int price = queryFlightPrice(qfreq.getID(), qfreq.getFlightNum());
-                QueryFlightResponse qfres = new QueryFlightResponse(qfreq.getID(), qfreq.getFlightNum(), seat, price);
-                qfres.transactionIDs = (ArrayList<Integer>) qfreq.transactionIDs.clone();
-                reply(qfres);
-                break;
-            case RESERVE_FLIGHT_REQUEST:
-                ReserveFlightRequest rfr = (ReserveFlightRequest) rmsg;
-                reserveFlight(rfr.getID(), rfr.getCustomerid(), rfr.getFlightnumber());
-                seat = queryFlight(rfr.getID(), rfr.getFlightnumber());
-                price = queryFlightPrice(rfr.getID(), rfr.getFlightnumber());
-                boolean success = price >= 0;
-                ReserveFlightResponse rfres = new ReserveFlightResponse(rfr.getID(),
-                        rfr.getFlightnumber(), seat, price, success);
-                rfres.transactionIDs = (ArrayList<Integer>) rfr.transactionIDs.clone();
-                reply(rfres);
-                break;
-            case ADD_CAR_REQUEST:
-                AddCarRequest acreq = (AddCarRequest) rmsg;
-                addCars(acreq.getID(), acreq.getLocation(),
-                        acreq.getCarnum(), acreq.getPrice());
-                break;
-            case DELETE_CAR_REQUEST:
-                DelCarRequest dcreq = (DelCarRequest) rmsg;
-                deleteCars(dcreq.getID(), dcreq.getLocation());
-                break;
-            case QUERY_CAR_REQUEST:
-            case QUERY_CARPRICE_REQUEST:
-                QueryCarRequest qcreq = (QueryCarRequest) rmsg;
-                int carnum = queryCars(qcreq.getID(), qcreq.getLocation());
-                int carprice = queryCarsPrice(qcreq.getID(), qcreq.getLocation());
-                QueryCarResponse qcres = new QueryCarResponse(qcreq.getID(), qcreq.getLocation(),
-                        carnum, carprice);
-                qcres.transactionIDs = (ArrayList<Integer>) qcreq.transactionIDs.clone();
-                reply(qcres);
-                break;
-            case RESERVE_CAR_REQUEST:
-                ReserveCarRequest rcr = (ReserveCarRequest) rmsg;
-                reserveCar(rcr.getID(), rcr.getCustomerid(), rcr.getLocation());
-                carnum = queryCars(rcr.getID(), rcr.getLocation());
-                carprice = queryCarsPrice(rcr.getID(), rcr.getLocation());
-                success = carprice >= 0;
-                ReserveRoomResponse rcres = new ReserveRoomResponse(rcr.getID(),
-                        rcr.getLocation(), carnum, carprice, success);
-                rcres.transactionIDs = (ArrayList<Integer>) rcr.transactionIDs.clone();
-                reply(rcres);
-                break;
-            case ADD_ROOM_REQUEST:
-                AddRoomRequest arreq = (AddRoomRequest) rmsg;
-                addRooms(arreq.getID(), arreq.getLocation(), arreq.getRoomnum(), arreq.getPrice());
-                break;
-            case DELETE_ROOM_REQUEST:
-                DelRoomRequest drreq = (DelRoomRequest) rmsg;
-                deleteRooms(drreq.getID(), drreq.getLocation());
-                break;
-            case QUERY_ROOM_REQUEST:
-            case QUERY_ROOMPRICE_REQUEST:
-                QueryRoomRequest qrreq = (QueryRoomRequest) rmsg;
-                int roomnum = queryRooms(qrreq.getID(), qrreq.getLocation());
-                int roomprice = queryRoomsPrice(qrreq.getID(), qrreq.getLocation());
-                QueryRoomResponse qrres = new QueryRoomResponse(qrreq.getID(), qrreq.getLocation(),
-                        roomnum, roomprice);
-                qrres.transactionIDs = (ArrayList<Integer>) qrreq.transactionIDs.clone();
-                reply(qrres);
-                break;
-            case RESERVE_ROOM_REQUEST:
-                ReserveRoomRequest rrr = (ReserveRoomRequest) rmsg;
-                reserveRoom(rrr.getID(), rrr.getCustomerid(), rrr.getLocation());
-                roomnum = queryRooms(rrr.getID(), rrr.getLocation());
-                roomprice = queryRoomsPrice(rrr.getID(), rrr.getLocation());
-                success = roomprice >= 0;
-                ReserveRoomResponse rrres = new ReserveRoomResponse(rrr.getID(),
-                        rrr.getLocation(), roomnum, roomprice, success);
-                rrres.transactionIDs = (ArrayList<Integer>) rrr.transactionIDs.clone();
-                reply(rrres);
-                break;
-            case ADD_CUSTOMER_REQUEST:
-                AddCustomerRequest acureq = (AddCustomerRequest) rmsg;
-                newCustomer(acureq.getID());
-                break;
-            case ADD_CUSTOMER_ID_REQUEST:
-                AddCustomerWithIDRequest acuidreq = (AddCustomerWithIDRequest) rmsg;
-                newCustomer(acuidreq.getID(), acuidreq.getCustomerid());
-                break;
-            case DELETE_CUSTOMER_REQUEST:
-                DelCustomerRequest dcureq = (DelCustomerRequest) rmsg;
-                Customer cust = (Customer) readData(dcureq.getID(), Customer.getKey(dcureq.getCustomerid()));
-                if (cust != null) {
-                    deleteCustomer(dcureq.getID(), dcureq.getCustomerid());
-                    replyAll(getDelCustomerResponse(cust));
-                }
-                break;
-            case QUERY_CUSTOMER_REQUEST:
-                QueryCustomerRequest qcureq = (QueryCustomerRequest) rmsg;
-                QueryCustomerResponse qcures = new QueryCustomerResponse(qcureq.getID(),
-                        qcureq.getCustomerid(), queryCustomerInfo(qcureq.getID(), qcureq.getCustomerid()));
-                qcures.transactionIDs = (ArrayList<Integer>) qcureq.transactionIDs.clone();
-                reply(qcures);
-                break;
-            case RESERVE_ITINERARY_REQUEST:
-                ReserveItineraryRequest rir = (ReserveItineraryRequest) rmsg;
-                for (int i = 0; i < rir.getFlightNumbers().size(); i++) {
-                    reserveFlight(rir.getID(), rir.getCustomerid(),
-                            Integer.parseInt((String) rir.getFlightNumbers().get(i)));
-                }
-                if (rir.getCarflag()) reserveCar(rir.getID(), rir.getCustomerid(), rir.getLocation());
-                if (rir.getRoomflag()) reserveRoom(rir.getID(), rir.getCustomerid(), rir.getLocation());
-                Vector seats = new Vector();
-                Vector prices = new Vector();
-                for (int i = 0; i < rir.getFlightNumbers().size(); i++) {
-                    seats.add(queryFlight(rir.getID(),
-                            Integer.parseInt((String) rir.getFlightNumbers().get(i))));
-                    prices.add(queryFlightPrice(rir.getID(),
-                            Integer.parseInt((String)rir.getFlightNumbers().get(i))));
-                }
-                carnum = 0;
-                carprice = 0;
-                roomnum = 0;
-                roomprice = 0;
-                if (rir.getCarflag()) {
-                    carnum = queryCars(rir.getID(), rir.getLocation());
-                    carprice = queryCarsPrice(rir.getID(), rir.getLocation());
-                }
-                if (rir.getRoomflag()) {
-                    roomnum = queryRooms(rir.getID(), rir.getLocation());
-                    roomprice = queryRoomsPrice(rir.getID(), rir.getLocation());
-                }
-                success = carprice < 0 && roomprice < 0;
-                for (Object p : prices) {
-                    if ((Integer) p < 0) {
-                        success = false;
-                        break;
+        if (msg instanceof ReservationMessage) {
+            ReservationMessage rmsg = (ReservationMessage) msg;
+            switch (rmsg.getMessageType()) {
+                case ADD_FLIGHT_REQUEST:
+                    AddFlightRequest afreq = (AddFlightRequest) rmsg;
+                    addFlight(afreq.getID(), afreq.getFlightNum(),
+                            afreq.getFlightSeat(), afreq.getFlightPrice());
+                    break;
+                case DELETE_FLIGHT_REQUEST:
+                    DelFlightRequest dfreq = (DelFlightRequest) rmsg;
+                    deleteFlight(dfreq.getID(), dfreq.getFlightNum());
+                    break;
+                case QUERY_FLIGHT_REQUEST:
+                case QUERY_FLIGHTPRICE_REQUEST:
+                    QueryFlightRequest qfreq = (QueryFlightRequest) rmsg;
+                    int seat = queryFlight(qfreq.getID(), qfreq.getFlightNum());
+                    int price = queryFlightPrice(qfreq.getID(), qfreq.getFlightNum());
+                    QueryFlightResponse qfres = new QueryFlightResponse(qfreq.getID(), qfreq.getFlightNum(), seat, price);
+                    qfres.transactionIDs = (ArrayList<Integer>) qfreq.transactionIDs.clone();
+                    reply(qfres);
+                    break;
+                case RESERVE_FLIGHT_REQUEST:
+                    ReserveFlightRequest rfr = (ReserveFlightRequest) rmsg;
+                    reserveFlight(rfr.getID(), rfr.getCustomerid(), rfr.getFlightnumber());
+                    seat = queryFlight(rfr.getID(), rfr.getFlightnumber());
+                    price = queryFlightPrice(rfr.getID(), rfr.getFlightnumber());
+                    boolean success = price >= 0;
+                    ReserveFlightResponse rfres = new ReserveFlightResponse(rfr.getID(),
+                            rfr.getFlightnumber(), seat, price, success);
+                    rfres.transactionIDs = (ArrayList<Integer>) rfr.transactionIDs.clone();
+                    reply(rfres);
+                    break;
+                case ADD_CAR_REQUEST:
+                    AddCarRequest acreq = (AddCarRequest) rmsg;
+                    addCars(acreq.getID(), acreq.getLocation(),
+                            acreq.getCarnum(), acreq.getPrice());
+                    break;
+                case DELETE_CAR_REQUEST:
+                    DelCarRequest dcreq = (DelCarRequest) rmsg;
+                    deleteCars(dcreq.getID(), dcreq.getLocation());
+                    break;
+                case QUERY_CAR_REQUEST:
+                case QUERY_CARPRICE_REQUEST:
+                    QueryCarRequest qcreq = (QueryCarRequest) rmsg;
+                    int carnum = queryCars(qcreq.getID(), qcreq.getLocation());
+                    int carprice = queryCarsPrice(qcreq.getID(), qcreq.getLocation());
+                    QueryCarResponse qcres = new QueryCarResponse(qcreq.getID(), qcreq.getLocation(),
+                            carnum, carprice);
+                    qcres.transactionIDs = (ArrayList<Integer>) qcreq.transactionIDs.clone();
+                    reply(qcres);
+                    break;
+                case RESERVE_CAR_REQUEST:
+                    ReserveCarRequest rcr = (ReserveCarRequest) rmsg;
+                    reserveCar(rcr.getID(), rcr.getCustomerid(), rcr.getLocation());
+                    carnum = queryCars(rcr.getID(), rcr.getLocation());
+                    carprice = queryCarsPrice(rcr.getID(), rcr.getLocation());
+                    success = carprice >= 0;
+                    ReserveRoomResponse rcres = new ReserveRoomResponse(rcr.getID(),
+                            rcr.getLocation(), carnum, carprice, success);
+                    rcres.transactionIDs = (ArrayList<Integer>) rcr.transactionIDs.clone();
+                    reply(rcres);
+                    break;
+                case ADD_ROOM_REQUEST:
+                    AddRoomRequest arreq = (AddRoomRequest) rmsg;
+                    addRooms(arreq.getID(), arreq.getLocation(), arreq.getRoomnum(), arreq.getPrice());
+                    break;
+                case DELETE_ROOM_REQUEST:
+                    DelRoomRequest drreq = (DelRoomRequest) rmsg;
+                    deleteRooms(drreq.getID(), drreq.getLocation());
+                    break;
+                case QUERY_ROOM_REQUEST:
+                case QUERY_ROOMPRICE_REQUEST:
+                    QueryRoomRequest qrreq = (QueryRoomRequest) rmsg;
+                    int roomnum = queryRooms(qrreq.getID(), qrreq.getLocation());
+                    int roomprice = queryRoomsPrice(qrreq.getID(), qrreq.getLocation());
+                    QueryRoomResponse qrres = new QueryRoomResponse(qrreq.getID(), qrreq.getLocation(),
+                            roomnum, roomprice);
+                    qrres.transactionIDs = (ArrayList<Integer>) qrreq.transactionIDs.clone();
+                    reply(qrres);
+                    break;
+                case RESERVE_ROOM_REQUEST:
+                    ReserveRoomRequest rrr = (ReserveRoomRequest) rmsg;
+                    reserveRoom(rrr.getID(), rrr.getCustomerid(), rrr.getLocation());
+                    roomnum = queryRooms(rrr.getID(), rrr.getLocation());
+                    roomprice = queryRoomsPrice(rrr.getID(), rrr.getLocation());
+                    success = roomprice >= 0;
+                    ReserveRoomResponse rrres = new ReserveRoomResponse(rrr.getID(),
+                            rrr.getLocation(), roomnum, roomprice, success);
+                    rrres.transactionIDs = (ArrayList<Integer>) rrr.transactionIDs.clone();
+                    reply(rrres);
+                    break;
+                case ADD_CUSTOMER_REQUEST:
+                    AddCustomerRequest acureq = (AddCustomerRequest) rmsg;
+                    newCustomer(acureq.getID());
+                    break;
+                case ADD_CUSTOMER_ID_REQUEST:
+                    AddCustomerWithIDRequest acuidreq = (AddCustomerWithIDRequest) rmsg;
+                    newCustomer(acuidreq.getID(), acuidreq.getCustomerid());
+                    break;
+                case DELETE_CUSTOMER_REQUEST:
+                    DelCustomerRequest dcureq = (DelCustomerRequest) rmsg;
+                    Customer cust = (Customer) readData(dcureq.getID(), Customer.getKey(dcureq.getCustomerid()));
+                    if (cust != null) {
+                        deleteCustomer(dcureq.getID(), dcureq.getCustomerid());
+                        replyAll(getDelCustomerResponse(cust));
                     }
-                }
-                ReserveItineraryResponse rires = new ReserveItineraryResponse(rir.getID(),
-                        rir.getFlightNumbers(), seats, prices, rir.getLocation(), carnum, carprice,
-                        roomnum, roomprice, rir.getCarflag(), rir.getRoomflag(), success);
-                rires.transactionIDs = (ArrayList<Integer>) rir.transactionIDs.clone();
-                reply(rires);
-                break;
-            default:
-                System.out.println("unrecognizable message");
+                    break;
+                case QUERY_CUSTOMER_REQUEST:
+                    QueryCustomerRequest qcureq = (QueryCustomerRequest) rmsg;
+                    QueryCustomerResponse qcures = new QueryCustomerResponse(qcureq.getID(),
+                            qcureq.getCustomerid(), queryCustomerInfo(qcureq.getID(), qcureq.getCustomerid()));
+                    qcures.transactionIDs = (ArrayList<Integer>) qcureq.transactionIDs.clone();
+                    reply(qcures);
+                    break;
+                case RESERVE_ITINERARY_REQUEST:
+                    ReserveItineraryRequest rir = (ReserveItineraryRequest) rmsg;
+                    for (int i = 0; i < rir.getFlightNumbers().size(); i++) {
+                        reserveFlight(rir.getID(), rir.getCustomerid(),
+                                Integer.parseInt((String) rir.getFlightNumbers().get(i)));
+                    }
+                    if (rir.getCarflag()) reserveCar(rir.getID(), rir.getCustomerid(), rir.getLocation());
+                    if (rir.getRoomflag()) reserveRoom(rir.getID(), rir.getCustomerid(), rir.getLocation());
+                    Vector seats = new Vector();
+                    Vector prices = new Vector();
+                    for (int i = 0; i < rir.getFlightNumbers().size(); i++) {
+                        seats.add(queryFlight(rir.getID(),
+                                Integer.parseInt((String) rir.getFlightNumbers().get(i))));
+                        prices.add(queryFlightPrice(rir.getID(),
+                                Integer.parseInt((String) rir.getFlightNumbers().get(i))));
+                    }
+                    carnum = 0;
+                    carprice = 0;
+                    roomnum = 0;
+                    roomprice = 0;
+                    if (rir.getCarflag()) {
+                        carnum = queryCars(rir.getID(), rir.getLocation());
+                        carprice = queryCarsPrice(rir.getID(), rir.getLocation());
+                    }
+                    if (rir.getRoomflag()) {
+                        roomnum = queryRooms(rir.getID(), rir.getLocation());
+                        roomprice = queryRoomsPrice(rir.getID(), rir.getLocation());
+                    }
+                    success = carprice < 0 && roomprice < 0;
+                    for (Object p : prices) {
+                        if ((Integer) p < 0) {
+                            success = false;
+                            break;
+                        }
+                    }
+                    ReserveItineraryResponse rires = new ReserveItineraryResponse(rir.getID(),
+                            rir.getFlightNumbers(), seats, prices, rir.getLocation(), carnum, carprice,
+                            roomnum, roomprice, rir.getCarflag(), rir.getRoomflag(), success);
+                    rires.transactionIDs = (ArrayList<Integer>) rir.transactionIDs.clone();
+                    reply(rires);
+                    break;
+                default:
+                    System.out.println("unrecognizable message");
+            }
         }
     }
 
