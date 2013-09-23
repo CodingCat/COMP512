@@ -4,7 +4,7 @@ import nio.Message;
 
 public class ReservationMessage extends Message {
 
-    protected MessageType type;
+    protected MessageType type = MessageType.UNKNOW;
 
     public MessageType getMessageType () {
         return type;

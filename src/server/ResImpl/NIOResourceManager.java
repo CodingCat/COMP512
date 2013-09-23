@@ -349,6 +349,15 @@ public class NIOResourceManager extends NIOReactor{
                     //return back to middleware
                     reply(rmsg);
                     break;
+                case DELETE_CUSTOMER_RESPONSE:
+                    DelCustomerResponse dcr = (DelCustomerResponse) rmsg;
+                    for (int i = 0; i < dcr.getFlightnumbers().size(); i++)
+                        deleteFlight(0, dcr.getFlightnumbers().get(i));
+                    for (int i = 0; i < dcr.getCarlocation().size(); i++)
+                        deleteCars(0, dcr.getCarlocation().get(i));
+                    for (int i = 0; i < dcr.getRoomlocation().size(); i++)
+                        deleteRooms(0, dcr.getRoomlocation().get(i));
+                    break;
                 case QUERY_CUSTOMER_RESPONSE:
                     //do not cache bill
                     reply(rmsg);
@@ -366,48 +375,61 @@ public class NIOResourceManager extends NIOReactor{
     }
 
     private void addCacheEntry(ReservationMessage rmsg) {
-        switch (rmsg.getMessageType()) {
-            case QUERY_FLIGHT_RESPONSE:
-            case QUERY_FLIGHTPRICE_RESPONSE:
-                QueryFlightResponse qfq = (QueryFlightResponse) rmsg;
-                addFlight(qfq.getID(), qfq.getFlightnumber(), qfq.getSeat(), qfq.getPrice());
-                break;
-            case QUERY_CAR_REQUEST:
-            case QUERY_CARPRICE_RESPONSE:
-                QueryCarResponse qcr = (QueryCarResponse) rmsg;
-                addCars(qcr.getID(), qcr.getLocation(), qcr.getCarNum(), qcr.getPrice());
-                break;
-            case QUERY_ROOM_REQUEST:
-            case QUERY_ROOM_RESPONSE:
-                QueryRoomResponse qrr = (QueryRoomResponse) rmsg;
-                addRooms(qrr.getID(), qrr.getLocation(), qrr.getRoomnum(), qrr.getRoomprice());
-                break;
-            case RESERVE_FLIGHT_RESPONSE:
-                ReserveFlightResponse rfr = (ReserveFlightResponse) rmsg;
-                addFlight(rfr.getID(), rfr.getFlightnumber(), rfr.getSeat(), rfr.getPrice());
-            case RESERVE_CAR_RESPONSE:
-                ReserveCarResponse rcr = (ReserveCarResponse) rmsg;
-                addCars(rcr.getID(), rcr.getLocation(), rcr.getCarNum(), rcr.getPrice());
-            case RESERVE_ROOM_RESPONSE:
-                ReserveRoomResponse rrr = (ReserveRoomResponse) rmsg;
-                addRooms(rrr.getID(), rrr.getLocation(), rrr.getRoomnum(), rrr.getRoomprice());
-            case RESERVE_ITINERARY_RESPONSE:
-                ReserveItineraryResponse rires = (ReserveItineraryResponse) rmsg;
-                //flights
-                for (int i = 0; i < rires.getFlightnumbers().size(); i++) {
-                    addFlight(rires.getId(),
-                            Integer.parseInt((String) rires.getFlightnumbers().get(i)),
-                            Integer.parseInt((String) rires.getSeatnumber().get(i)),
-                            Integer.parseInt((String) rires.getFlightprice().get(i)));
-                }
-                //cars
-                if (rires.isCarflag())
-                    addCars(rires.getId(), rires.getLocation(), rires.getCarnum(), rires.getCarprice());
-                //room
-                if (rires.isRoomflag())
-                    addRooms(rires.getId(), rires.getLocation(), rires.getRoomnum(), rires.getRoomprice());
-            default:
-                break;
+        try {
+            switch (rmsg.getMessageType()) {
+                case QUERY_FLIGHT_RESPONSE:
+                case QUERY_FLIGHTPRICE_RESPONSE:
+                    QueryFlightResponse qfq = (QueryFlightResponse) rmsg;
+                    addFlight(qfq.getID(), qfq.getFlightnumber(), qfq.getSeat(), qfq.getPrice());
+                    break;
+                case QUERY_CAR_RESPONSE:
+                case QUERY_CARPRICE_RESPONSE:
+                    QueryCarResponse qcr = (QueryCarResponse) rmsg;
+                    addCars(qcr.getID(), qcr.getLocation(), qcr.getCarNum(), qcr.getPrice());
+                    break;
+                case QUERY_ROOM_RESPONSE:
+                case QUERY_ROOMPRICE_RESPONSE:
+                    QueryRoomResponse qrr = (QueryRoomResponse) rmsg;
+                    addRooms(qrr.getID(), qrr.getLocation(), qrr.getRoomnum(), qrr.getRoomprice());
+                    break;
+                case RESERVE_FLIGHT_RESPONSE:
+                    ReserveFlightResponse rfr = (ReserveFlightResponse) rmsg;
+                    if (rfr.isSuccess())
+                        addFlight(rfr.getID(), rfr.getFlightnumber(), rfr.getSeat(), rfr.getPrice());
+                    break;
+                case RESERVE_CAR_RESPONSE:
+                    ReserveCarResponse rcr = (ReserveCarResponse) rmsg;
+                    if (rcr.isSuccess())
+                        addCars(rcr.getID(), rcr.getLocation(), rcr.getCarNum(), rcr.getPrice());
+                    break;
+                case RESERVE_ROOM_RESPONSE:
+                    ReserveRoomResponse rrr = (ReserveRoomResponse) rmsg;
+                    if (rrr.isSuccess())
+                        addRooms(rrr.getID(), rrr.getLocation(), rrr.getRoomnum(), rrr.getRoomprice());
+                    break;
+                case RESERVE_ITINERARY_RESPONSE:
+                    ReserveItineraryResponse rires = (ReserveItineraryResponse) rmsg;
+                    if (rires.isSuccess()) {
+                        //flights
+                        for (int i = 0; i < rires.getFlightnumbers().size(); i++) {
+                            addFlight(rires.getId(),
+                                    Integer.parseInt((String) rires.getFlightnumbers().get(i)),
+                                    Integer.parseInt((String) rires.getSeatnumber().get(i)),
+                                    Integer.parseInt((String) rires.getFlightprice().get(i)));
+                        }
+                        //cars
+                        if (rires.isCarflag())
+                            addCars(rires.getId(), rires.getLocation(), rires.getCarnum(), rires.getCarprice());
+                        //room
+                        if (rires.isRoomflag())
+                            addRooms(rires.getId(), rires.getLocation(), rires.getRoomnum(), rires.getRoomprice());
+                    }
+                    break;
+                default:
+                    break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

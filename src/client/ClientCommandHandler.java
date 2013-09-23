@@ -132,7 +132,7 @@ public class ClientCommandHandler extends NIOClient {
         }
     }
 
-    public void newcustomerID(Vector<String> arguments) {
+    public void newcustomerid(Vector<String> arguments) {
         if(arguments.size() != 3){
             System.out.println("Wrong Argument List");
             System.out.println(supportCommands.get("newcustomerid"));

@@ -29,6 +29,7 @@ public class DelCustomerResponse extends ReservationMessage {
                                Vector<String> roomlocation,
                                Vector<Integer> roomnum,
                                Vector<Integer> roomprice) {
+        type = MessageType.DELETE_CUSTOMER_RESPONSE;
         this.flightnumbers = flightnumbers;
         this.seatnumber = seatnumber;
         this.flightprice = flightprice;

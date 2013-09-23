@@ -1,6 +1,7 @@
 package message;
 
 public enum MessageType {
+    UNKNOW,
     ADD_FLIGHT_REQUEST,
     ADD_CAR_REQUEST,
     ADD_ROOM_REQUEST,
@@ -9,6 +10,7 @@ public enum MessageType {
     DELETE_CAR_REQUEST,
     DELETE_ROOM_REQUEST,
     DELETE_CUSTOMER_REQUEST,
+    DELETE_CUSTOMER_RESPONSE,
     QUERY_FLIGHT_REQUEST,
     QUERY_FLIGHT_RESPONSE,
     QUERY_CAR_REQUEST,

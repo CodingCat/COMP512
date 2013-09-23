@@ -10,11 +10,11 @@ import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.Vector;
 
-public class DataStore extends NIOReactor {
+public class NIODataStore extends NIOReactor {
 
     protected RMHashtable m_itemHT = new RMHashtable();
 
-    public DataStore(String listenIp, int listenport) {
+    public NIODataStore(String listenIp, int listenport) {
         super(listenIp, listenport);
     }
 
@@ -75,12 +75,14 @@ public class DataStore extends NIOReactor {
 
     // query the price of an item
     protected int queryPrice(int id, String key){
-        Trace.info("RM::queryCarsPrice(" + id + ", " + key + ") called" );
+        Trace.info("RM::queryPrice(" + id + ", " + key + ") called" );
         ReservableItem curObj = (ReservableItem) readData( id, key);
         int value = 0;
         if( curObj != null ) {
             value = curObj.getPrice();
-        } // else
+        } else {
+            return -1;
+        }
         Trace.info("RM::queryCarsPrice(" + id + ", " + key + ") returns cost=$" + value );
         return value;
     }
@@ -91,7 +93,7 @@ public class DataStore extends NIOReactor {
         int value = 0;
         if( curObj != null ) {
             value = curObj.getCount();
-        } // else
+        } else return -1;
         Trace.info("RM::queryNum(" + id + ", " + key + ") returns count=" + value);
         return value;
     }
@@ -346,8 +348,9 @@ public class DataStore extends NIOReactor {
                 reserveFlight(rfr.getID(), rfr.getCustomerid(), rfr.getFlightnumber());
                 seat = queryFlight(rfr.getID(), rfr.getFlightnumber());
                 price = queryFlightPrice(rfr.getID(), rfr.getFlightnumber());
+                boolean success = price >= 0;
                 ReserveFlightResponse rfres = new ReserveFlightResponse(rfr.getID(),
-                        rfr.getFlightnumber(), seat, price);
+                        rfr.getFlightnumber(), seat, price, success);
                 rfres.transactionIDs = (ArrayList<Integer>) rfr.transactionIDs.clone();
                 reply(rfres);
                 break;
@@ -375,8 +378,9 @@ public class DataStore extends NIOReactor {
                 reserveCar(rcr.getID(), rcr.getCustomerid(), rcr.getLocation());
                 carnum = queryCars(rcr.getID(), rcr.getLocation());
                 carprice = queryCarsPrice(rcr.getID(), rcr.getLocation());
+                success = carprice >= 0;
                 ReserveRoomResponse rcres = new ReserveRoomResponse(rcr.getID(),
-                        rcr.getLocation(), carnum, carprice);
+                        rcr.getLocation(), carnum, carprice, success);
                 rcres.transactionIDs = (ArrayList<Integer>) rcr.transactionIDs.clone();
                 reply(rcres);
                 break;
@@ -403,8 +407,9 @@ public class DataStore extends NIOReactor {
                 reserveRoom(rrr.getID(), rrr.getCustomerid(), rrr.getLocation());
                 roomnum = queryRooms(rrr.getID(), rrr.getLocation());
                 roomprice = queryRoomsPrice(rrr.getID(), rrr.getLocation());
+                success = roomprice >= 0;
                 ReserveRoomResponse rrres = new ReserveRoomResponse(rrr.getID(),
-                        rrr.getLocation(), roomnum, roomprice);
+                        rrr.getLocation(), roomnum, roomprice, success);
                 rrres.transactionIDs = (ArrayList<Integer>) rrr.transactionIDs.clone();
                 reply(rrres);
                 break;
@@ -459,9 +464,16 @@ public class DataStore extends NIOReactor {
                     roomnum = queryRooms(rir.getID(), rir.getLocation());
                     roomprice = queryRoomsPrice(rir.getID(), rir.getLocation());
                 }
+                success = carprice < 0 && roomprice < 0;
+                for (Object p : prices) {
+                    if ((Integer) p < 0) {
+                        success = false;
+                        break;
+                    }
+                }
                 ReserveItineraryResponse rires = new ReserveItineraryResponse(rir.getID(),
                         rir.getFlightNumbers(), seats, prices, rir.getLocation(), carnum, carprice,
-                        roomnum, roomprice, rir.getCarflag(), rir.getRoomflag());
+                        roomnum, roomprice, rir.getCarflag(), rir.getRoomflag(), success);
                 rires.transactionIDs = (ArrayList<Integer>) rir.transactionIDs.clone();
                 reply(rires);
                 break;
@@ -503,7 +515,7 @@ public class DataStore extends NIOReactor {
     }
 
     public static void main(String [] args) {
-        DataStore ds = new DataStore(args[0], Integer.parseInt(args[1]));
+        NIODataStore ds = new NIODataStore(args[0], Integer.parseInt(args[1]));
         Thread ds_t = new Thread(ds);
         ds_t.start();
     }

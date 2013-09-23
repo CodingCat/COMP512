@@ -22,9 +22,12 @@ public class ReserveItineraryResponse extends ReservationMessage {
     private boolean carflag;
     private boolean roomflag;
 
+    private boolean success = false;
+
     public ReserveItineraryResponse(int mid, Vector fnum, Vector snum, Vector fpr,
                                     String  loc, int cnum, int cpr, int rnum, int rpr,
-                                    boolean car, boolean room) {
+                                    boolean car, boolean room, boolean suc) {
+        type = MessageType.RESERVE_ITINERARY_RESPONSE;
         id = mid;
         flightnumbers = fnum;
         seatnumber = snum;
@@ -36,6 +39,7 @@ public class ReserveItineraryResponse extends ReservationMessage {
         roomprice = rpr;
         carflag = car;
         roomflag = room;
+        success = suc;
     }
 
 
@@ -82,5 +86,9 @@ public class ReserveItineraryResponse extends ReservationMessage {
 
     public boolean isRoomflag() {
         return roomflag;
+    }
+
+    public boolean isSuccess() {
+        return success;
     }
 }
