@@ -104,44 +104,22 @@ public class NIOResourceManager extends NIOReactor{
     public boolean addCars(int id, String location, int numCars, int price) {
         Trace.info("RM::addCars(" + id + ", " + location + ", " + numCars + ", $" + price + ") called" );
         Car curObj = (Car) readData( id, Car.getKey(location) );
-        if( curObj == null ) {
-            // car location doesn't exist...add it
-            Car newObj = new Car( location, numCars, price );
-            writeData( id, newObj.getKey(), newObj );
-            Trace.info("RM::addCars(" + id + ") created new location " +
-                    location + ", count=" + numCars + ", price=$" + price );
-        } else {
-            // add count to existing car location and update price...
-            curObj.setCount( curObj.getCount() + numCars );
-            if( price > 0 ) {
-                curObj.setPrice( price );
-            } // if
-            writeData( id, curObj.getKey(), curObj );
-            Trace.info("RM::addCars(" + id + ") modified existing location " +
-                    location + ", count=" + curObj.getCount() + ", price=$" + price );
-        } // else
+        // car location doesn't exist...add it
+        Car newObj = new Car(location, numCars, price);
+        writeData(id, newObj.getKey(), newObj);
+        Trace.info("RM::addCars(" + id + ") created new location " +
+                location + ", count=" + numCars + ", price=$" + price);
         return true;
     }
 
     public boolean addRooms(int id, String location, int numRooms, int price) {
         Trace.info("RM::addRooms(" + id + ", " + location + ", " + numRooms + ", $" + price + ") called" );
         Hotel curObj = (Hotel) readData( id, Hotel.getKey(location) );
-        if( curObj == null ) {
-            // doesn't exist...add it
-            Hotel newObj = new Hotel( location, numRooms, price );
-            writeData( id, newObj.getKey(), newObj );
-            Trace.info("RM::addRooms(" + id + ") created new room location " +
-                    location + ", count=" + numRooms + ", price=$" + price );
-        } else {
-            // add count to existing object and update price...
-            curObj.setCount( curObj.getCount() + numRooms );
-            if( price > 0 ) {
-                curObj.setPrice( price );
-            } // if
-            writeData( id, curObj.getKey(), curObj );
-            Trace.info("RM::addRooms(" + id + ") modified existing location " +
-                    location + ", count=" + curObj.getCount() + ", price=$" + price );
-        } // else
+        // doesn't exist...add it
+        Hotel newObj = new Hotel(location, numRooms, price);
+        writeData(id, newObj.getKey(), newObj);
+        Trace.info("RM::addRooms(" + id + ") created new room location " +
+                location + ", count=" + numRooms + ", price=$" + price);
         return(true);
     }
 
@@ -360,12 +338,19 @@ public class NIOResourceManager extends NIOReactor{
                 case QUERY_FLIGHTPRICE_RESPONSE:
                 case QUERY_CAR_RESPONSE:
                 case QUERY_CARPRICE_RESPONSE:
-                case QUERY_CUSTOMER_RESPONSE:
                 case QUERY_ROOM_RESPONSE:
                 case QUERY_ROOMPRICE_RESPONSE:
+                case RESERVE_FLIGHT_RESPONSE:
+                case RESERVE_CAR_RESPONSE:
+                case RESERVE_ROOM_RESPONSE:
+                case RESERVE_ITINERARY_RESPONSE:
                     //write cache
                     addCacheEntry(rmsg);
                     //return back to middleware
+                    reply(rmsg);
+                    break;
+                case QUERY_CUSTOMER_RESPONSE:
+                    //do not cache bill
                     reply(rmsg);
                     break;
                 case RESERVE_FLIGHT_REQUEST:
@@ -387,6 +372,40 @@ public class NIOResourceManager extends NIOReactor{
                 QueryFlightResponse qfq = (QueryFlightResponse) rmsg;
                 addFlight(qfq.getID(), qfq.getFlightnumber(), qfq.getSeat(), qfq.getPrice());
                 break;
+            case QUERY_CAR_REQUEST:
+            case QUERY_CARPRICE_RESPONSE:
+                QueryCarResponse qcr = (QueryCarResponse) rmsg;
+                addCars(qcr.getID(), qcr.getLocation(), qcr.getCarNum(), qcr.getPrice());
+                break;
+            case QUERY_ROOM_REQUEST:
+            case QUERY_ROOM_RESPONSE:
+                QueryRoomResponse qrr = (QueryRoomResponse) rmsg;
+                addRooms(qrr.getID(), qrr.getLocation(), qrr.getRoomnum(), qrr.getRoomprice());
+                break;
+            case RESERVE_FLIGHT_RESPONSE:
+                ReserveFlightResponse rfr = (ReserveFlightResponse) rmsg;
+                addFlight(rfr.getID(), rfr.getFlightnumber(), rfr.getSeat(), rfr.getPrice());
+            case RESERVE_CAR_RESPONSE:
+                ReserveCarResponse rcr = (ReserveCarResponse) rmsg;
+                addCars(rcr.getID(), rcr.getLocation(), rcr.getCarNum(), rcr.getPrice());
+            case RESERVE_ROOM_RESPONSE:
+                ReserveRoomResponse rrr = (ReserveRoomResponse) rmsg;
+                addRooms(rrr.getID(), rrr.getLocation(), rrr.getRoomnum(), rrr.getRoomprice());
+            case RESERVE_ITINERARY_RESPONSE:
+                ReserveItineraryResponse rires = (ReserveItineraryResponse) rmsg;
+                //flights
+                for (int i = 0; i < rires.getFlightnumbers().size(); i++) {
+                    addFlight(rires.getId(),
+                            Integer.parseInt((String) rires.getFlightnumbers().get(i)),
+                            Integer.parseInt((String) rires.getSeatnumber().get(i)),
+                            Integer.parseInt((String) rires.getFlightprice().get(i)));
+                }
+                //cars
+                if (rires.isCarflag())
+                    addCars(rires.getId(), rires.getLocation(), rires.getCarnum(), rires.getCarprice());
+                //room
+                if (rires.isRoomflag())
+                    addRooms(rires.getId(), rires.getLocation(), rires.getRoomnum(), rires.getRoomprice());
             default:
                 break;
         }

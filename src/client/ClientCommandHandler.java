@@ -83,6 +83,37 @@ public class ClientCommandHandler extends NIOClient {
             System.out.println(supportCommands.get(commandName));
     }
 
+    public void itinerary(Vector<String> arguments) {
+        if(arguments.size() < 7){
+            System.out.println("Wrong Argument List");
+            System.out.println(supportCommands.get("itinerary"));
+            return;
+        }
+        System.out.println("Reserving an Itinerary using id:"+arguments.elementAt(1));
+        System.out.println("Customer id:"+arguments.elementAt(2));
+        for(int i=0;i<arguments.size()-6;i++)
+            System.out.println("Flight number"+arguments.elementAt(3+i));
+        System.out.println("Location for Car/Room booking:"+arguments.elementAt(arguments.size()-3));
+        System.out.println("Car to book?:"+arguments.elementAt(arguments.size()-2));
+        System.out.println("Room to book?:"+arguments.elementAt(arguments.size()-1));
+        try{
+            int id = Integer.parseInt(arguments.elementAt(1));
+            int customer = Integer.parseInt(arguments.elementAt(2));
+            Vector flightNumbers = new Vector();
+            for(int i=0;i<arguments.size()-6;i++)
+                flightNumbers.addElement(arguments.elementAt(3+i));
+            String location = arguments.elementAt(arguments.size() - 3) ;
+            boolean car = Boolean.parseBoolean(arguments.elementAt(arguments.size()-2));
+            boolean room = Boolean.parseBoolean(arguments.elementAt(arguments.size()-1));
+
+        }
+        catch(Exception e){
+            System.out.println("EXCEPTION:");
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     public void newcustomer(Vector<String> arguments) {
         if(arguments.size() != 2){
             System.out.println("Wrong Argument List");
@@ -230,6 +261,27 @@ public class ClientCommandHandler extends NIOClient {
         queryroom(arguments);
     }
 
+    public void reserveroom(Vector<String> arguments) {
+        if(arguments.size() != 4){
+            System.out.println("Wrong Argument List");
+            System.out.println(supportCommands.get("reserveroom"));
+            return;
+        }
+        System.out.println("Reserving a room at a location using id: "+arguments.elementAt(1));
+        System.out.println("Customer id: "+arguments.elementAt(2));
+        System.out.println("Location: "+arguments.elementAt(3));
+        try{
+            int id = Integer.parseInt(arguments.elementAt(1));
+            int customer = Integer.parseInt(arguments.elementAt(2));
+            String location = arguments.elementAt(3);
+            send(new ReserveRoomRequest(id, customer, location));
+        } catch(Exception e){
+            System.out.println("EXCEPTION:");
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     public void newcar(Vector<String> arguments) {
         if(arguments.size() != 5){
             System.out.println("Wrong Argument List");
@@ -297,6 +349,27 @@ public class ClientCommandHandler extends NIOClient {
 
     public void querycarprice(Vector<String> arguments) {
         querycar(arguments);
+    }
+
+    public void reservecar(Vector<String> arguments) {
+        if(arguments.size()!=4){
+            System.out.println("Wrong Argument List");
+            System.out.println(supportCommands.get("reservecar"));
+            return;
+        }
+        System.out.println("Reserving a car at a location using id: "+arguments.elementAt(1));
+        System.out.println("Customer id: "+arguments.elementAt(2));
+        System.out.println("Location: "+arguments.elementAt(3));
+        try{
+            int id = Integer.parseInt(arguments.elementAt(1));
+            int customer = Integer.parseInt(arguments.elementAt(2));
+            String location = arguments.elementAt(3);
+            send(new ReserveCarRequest(id, customer, location));
+        } catch(Exception e){
+            System.out.println("EXCEPTION:");
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public void newflight (Vector<String> arguments) {

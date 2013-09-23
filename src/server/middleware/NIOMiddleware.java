@@ -65,9 +65,6 @@ public class NIOMiddleware extends NIOReactor {
                     break;
                 case RESERVE_ITINERARY_REQUEST:
                     forward("flight", rmsg);
-                    forward("car", rmsg);
-                    forward("room", rmsg);
-                    forward("customer", rmsg);
                     break;
                 default:
                     break;

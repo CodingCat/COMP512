@@ -341,6 +341,16 @@ public class DataStore extends NIOReactor {
                 qfres.transactionIDs = (ArrayList<Integer>) qfreq.transactionIDs.clone();
                 reply(qfres);
                 break;
+            case RESERVE_FLIGHT_REQUEST:
+                ReserveFlightRequest rfr = (ReserveFlightRequest) rmsg;
+                reserveFlight(rfr.getID(), rfr.getCustomerid(), rfr.getFlightnumber());
+                seat = queryFlight(rfr.getID(), rfr.getFlightnumber());
+                price = queryFlightPrice(rfr.getID(), rfr.getFlightnumber());
+                ReserveFlightResponse rfres = new ReserveFlightResponse(rfr.getID(),
+                        rfr.getFlightnumber(), seat, price);
+                rfres.transactionIDs = (ArrayList<Integer>) rfr.transactionIDs.clone();
+                reply(rfres);
+                break;
             case ADD_CAR_REQUEST:
                 AddCarRequest acreq = (AddCarRequest) rmsg;
                 addCars(acreq.getID(), acreq.getLocation(),
@@ -360,6 +370,16 @@ public class DataStore extends NIOReactor {
                 qcres.transactionIDs = (ArrayList<Integer>) qcreq.transactionIDs.clone();
                 reply(qcres);
                 break;
+            case RESERVE_CAR_REQUEST:
+                ReserveCarRequest rcr = (ReserveCarRequest) rmsg;
+                reserveCar(rcr.getID(), rcr.getCustomerid(), rcr.getLocation());
+                carnum = queryCars(rcr.getID(), rcr.getLocation());
+                carprice = queryCarsPrice(rcr.getID(), rcr.getLocation());
+                ReserveRoomResponse rcres = new ReserveRoomResponse(rcr.getID(),
+                        rcr.getLocation(), carnum, carprice);
+                rcres.transactionIDs = (ArrayList<Integer>) rcr.transactionIDs.clone();
+                reply(rcres);
+                break;
             case ADD_ROOM_REQUEST:
                 AddRoomRequest arreq = (AddRoomRequest) rmsg;
                 addRooms(arreq.getID(), arreq.getLocation(), arreq.getRoomnum(), arreq.getPrice());
@@ -378,6 +398,16 @@ public class DataStore extends NIOReactor {
                 qrres.transactionIDs = (ArrayList<Integer>) qrreq.transactionIDs.clone();
                 reply(qrres);
                 break;
+            case RESERVE_ROOM_REQUEST:
+                ReserveRoomRequest rrr = (ReserveRoomRequest) rmsg;
+                reserveRoom(rrr.getID(), rrr.getCustomerid(), rrr.getLocation());
+                roomnum = queryRooms(rrr.getID(), rrr.getLocation());
+                roomprice = queryRoomsPrice(rrr.getID(), rrr.getLocation());
+                ReserveRoomResponse rrres = new ReserveRoomResponse(rrr.getID(),
+                        rrr.getLocation(), roomnum, roomprice);
+                rrres.transactionIDs = (ArrayList<Integer>) rrr.transactionIDs.clone();
+                reply(rrres);
+                break;
             case ADD_CUSTOMER_REQUEST:
                 AddCustomerRequest acureq = (AddCustomerRequest) rmsg;
                 newCustomer(acureq.getID());
@@ -388,7 +418,11 @@ public class DataStore extends NIOReactor {
                 break;
             case DELETE_CUSTOMER_REQUEST:
                 DelCustomerRequest dcureq = (DelCustomerRequest) rmsg;
-                deleteCustomer(dcureq.getID(), dcureq.getCustomerid());
+                Customer cust = (Customer) readData(dcureq.getID(), Customer.getKey(dcureq.getCustomerid()));
+                if (cust != null) {
+                    deleteCustomer(dcureq.getID(), dcureq.getCustomerid());
+                    replyAll(getDelCustomerResponse(cust));
+                }
                 break;
             case QUERY_CUSTOMER_REQUEST:
                 QueryCustomerRequest qcureq = (QueryCustomerRequest) rmsg;
@@ -397,9 +431,75 @@ public class DataStore extends NIOReactor {
                 qcures.transactionIDs = (ArrayList<Integer>) qcureq.transactionIDs.clone();
                 reply(qcures);
                 break;
+            case RESERVE_ITINERARY_REQUEST:
+                ReserveItineraryRequest rir = (ReserveItineraryRequest) rmsg;
+                for (int i = 0; i < rir.getFlightNumbers().size(); i++) {
+                    reserveFlight(rir.getID(), rir.getCustomerid(),
+                            Integer.parseInt((String) rir.getFlightNumbers().get(i)));
+                }
+                if (rir.getCarflag()) reserveCar(rir.getID(), rir.getCustomerid(), rir.getLocation());
+                if (rir.getRoomflag()) reserveRoom(rir.getID(), rir.getCustomerid(), rir.getLocation());
+                Vector seats = new Vector();
+                Vector prices = new Vector();
+                for (int i = 0; i < rir.getFlightNumbers().size(); i++) {
+                    seats.add(queryFlight(rir.getID(),
+                            Integer.parseInt((String) rir.getFlightNumbers().get(i))));
+                    prices.add(queryFlightPrice(rir.getID(),
+                            Integer.parseInt((String)rir.getFlightNumbers().get(i))));
+                }
+                carnum = 0;
+                carprice = 0;
+                roomnum = 0;
+                roomprice = 0;
+                if (rir.getCarflag()) {
+                    carnum = queryCars(rir.getID(), rir.getLocation());
+                    carprice = queryCarsPrice(rir.getID(), rir.getLocation());
+                }
+                if (rir.getRoomflag()) {
+                    roomnum = queryRooms(rir.getID(), rir.getLocation());
+                    roomprice = queryRoomsPrice(rir.getID(), rir.getLocation());
+                }
+                ReserveItineraryResponse rires = new ReserveItineraryResponse(rir.getID(),
+                        rir.getFlightNumbers(), seats, prices, rir.getLocation(), carnum, carprice,
+                        roomnum, roomprice, rir.getCarflag(), rir.getRoomflag());
+                rires.transactionIDs = (ArrayList<Integer>) rir.transactionIDs.clone();
+                reply(rires);
+                break;
             default:
                 System.out.println("unrecognizable message");
         }
+    }
+
+    private DelCustomerResponse getDelCustomerResponse(Customer customer) {
+        Vector<String> reservedflights = customer.getReservedCertainItems("flight-");
+        Vector<Integer> reservedflightnum = new Vector<Integer>();
+        Vector<Integer> reservedflightseats = new Vector<Integer>();
+        Vector<Integer> reservedflightprice = new Vector<Integer>();
+        Vector<String>  reservedcarlocations = customer.getReservedCertainItems("car-");
+        Vector<Integer> reservedcarnumbers = new Vector<Integer>();
+        Vector<Integer> reservedcarprice = new Vector<Integer>();
+        Vector<String>  reservedroomlocations = customer.getReservedCertainItems("room-");
+        Vector<Integer> reservedroomnumbers = new Vector<Integer>();
+        Vector<Integer> reservedroomprice = new Vector<Integer>();
+        //flights
+        for (String flightnum : reservedflights) {
+            reservedflightnum.add(Integer.parseInt(flightnum));
+            reservedflightseats.add(queryFlight(0, Integer.parseInt(flightnum)));
+            reservedflightprice.add(queryFlightPrice(0, Integer.parseInt(flightnum)));
+        }
+        //car
+        for (String location : reservedcarlocations) {
+            reservedcarnumbers.add(queryCars(0, location));
+            reservedcarprice.add(queryCarsPrice(0, location));
+        }
+        //room
+        for (String room : reservedroomlocations) {
+            reservedroomnumbers.add(queryRooms(0, room));
+            reservedroomprice.add(queryRoomsPrice(0, room));
+        }
+        return new DelCustomerResponse(reservedflightnum, reservedflightseats, reservedflightprice,
+                reservedcarlocations, reservedcarnumbers, reservedcarprice,
+                reservedroomlocations, reservedroomnumbers, reservedroomprice);
     }
 
     public static void main(String [] args) {
