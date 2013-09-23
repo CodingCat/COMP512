@@ -61,13 +61,14 @@ public abstract class NIOClient implements Runnable {
      * @param msg the message to be sent
      */
     public void send(Message msg) {
-        writebuffer.add(msg);
         try {
+            writebuffer.add(msg);
             String localIP = ((InetSocketAddress) toServerChannel.getLocalAddress()).
                     getAddress().getHostAddress();
             int localPort = ((InetSocketAddress) toServerChannel.getLocalAddress()).getPort();
             msg.transactionIDs.add((localIP + ":" + localPort).hashCode());
             toServerChannel.keyFor(clientSelector).interestOps(SelectionKey.OP_WRITE);
+            clientSelector.wakeup();
         } catch (Exception e) {
             closeChannel();
             if (!toServerChannel.isConnected()) {
