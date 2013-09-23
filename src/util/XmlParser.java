@@ -29,6 +29,10 @@ public class XmlParser {
         parse(confPath);
     }
 
+    public HashMap<String, Tuple2<String, Integer>> getPropertyMap() {
+        return propertyMap;
+    }
+
     public Tuple2<String, Integer> getTuple2(String key) {
         return propertyMap.get(key);
     }

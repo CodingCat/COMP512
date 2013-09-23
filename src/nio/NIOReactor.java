@@ -1,5 +1,7 @@
 package nio;
 
+import util.XmlParser;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -9,6 +11,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -20,9 +23,9 @@ public abstract class NIOReactor implements Runnable {
     private boolean clientRole = false;
     private HashMap<Integer, SocketChannel> clientConnections = null;
     private HashMap<SocketChannel, ArrayList<ByteBuffer>> clientWriteBuffer = null;
-    private ServerSocketChannel serverSocket;
     private HashMap<String, SocketChannel> channelMap = null;  //for client use
     private HashMap<SocketChannel, ArrayList<ByteBuffer>> forwardBuffer = null;//for client use
+    private HashMap<String, XmlParser.Tuple2<String, Integer>> serversList = null;
 
 
     public NIOReactor(String hostIP, int port) {
@@ -31,7 +34,7 @@ public abstract class NIOReactor implements Runnable {
             clientConnections = new HashMap<Integer, SocketChannel>();
             clientWriteBuffer = new HashMap<SocketChannel, ArrayList<ByteBuffer>>();
             serverSelector = Selector.open();
-            serverSocket = ServerSocketChannel.open();
+            ServerSocketChannel serverSocket = ServerSocketChannel.open();
             serverSocket.socket().bind(new InetSocketAddress(hostIP, port));
             serverSocket.configureBlocking(false);
             serverSocket.register(serverSelector, SelectionKey.OP_ACCEPT);
@@ -110,8 +113,7 @@ public abstract class NIOReactor implements Runnable {
         ArrayList<ByteBuffer> bytebufferlist = forwardBuffer.get(socket);
         sendOutBuffer(bytebufferlist, socket);
         if (bytebufferlist.isEmpty())
-        //key.channel().register(clientSelector, SelectionKey.OP_READ);
-        key.interestOps(SelectionKey.OP_READ);
+            key.interestOps(SelectionKey.OP_READ);
     }
 
     private void sendOutBuffer(ArrayList<ByteBuffer> buffer, SocketChannel socket) {
@@ -125,31 +127,60 @@ public abstract class NIOReactor implements Runnable {
                 buffer.remove(0);
             }
         } catch (Exception e) {
+            closeChannel(socket);
+            resetClientEndPoint();
             e.printStackTrace();
         }
     }
 
-    /**
-     * this function is optinally called, when you want to make the reactor in both of the role of
-     * client and server, you can call this
-     * @param serverIP
-     * @param port
-     */
-    public void setClientEndPoint(String serverName, String serverIP, int port) {
+    private void closeChannel(SocketChannel socket) {
+        try {
+            if (socket.keyFor(serverSelector) != null)
+                socket.keyFor(serverSelector).cancel();
+            if (socket.keyFor(clientSelector) != null)
+                socket.keyFor(clientSelector).cancel();
+            socket.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void resetClientEndPoint() {
+        try {
+            for (Map.Entry<String, SocketChannel> entry : channelMap.entrySet()) {
+                if (!entry.getValue().isConnected()) {
+                    SocketChannel socketChannel = SocketChannel.open();
+                    socketChannel.configureBlocking(false);
+                    socketChannel.connect(new InetSocketAddress(
+                            serversList.get(entry.getKey()).x,
+                            serversList.get(entry.getValue()).y));
+                    socketChannel.register(clientSelector, SelectionKey.OP_CONNECT);
+                    channelMap.put(entry.getKey(), socketChannel);
+                    forwardBuffer.put(socketChannel, new ArrayList<ByteBuffer>());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setClientEndPoint(HashMap<String, XmlParser.Tuple2<String, Integer>> servers) {
         try {
             if (!clientRole) {
                 clientRole = true;
                 channelMap = new HashMap<String, SocketChannel>();
                 forwardBuffer = new HashMap<SocketChannel, ArrayList<ByteBuffer>>();
             }
-            assert(!channelMap.containsKey(serverName));
             // Create a non-blocking socket channel
-            SocketChannel socketChannel = SocketChannel.open();
-            socketChannel.configureBlocking(false);
-            socketChannel.connect(new InetSocketAddress(serverIP, port));
-            socketChannel.register(clientSelector, SelectionKey.OP_CONNECT);
-            channelMap.put(serverName, socketChannel);
-            forwardBuffer.put(socketChannel, new ArrayList<ByteBuffer>());
+            for (Map.Entry<String, XmlParser.Tuple2<String, Integer>> entry : servers.entrySet()) {
+                SocketChannel socketChannel = SocketChannel.open();
+                socketChannel.configureBlocking(false);
+                socketChannel.connect(new InetSocketAddress(entry.getValue().x,
+                        entry.getValue().y));
+                socketChannel.register(clientSelector, SelectionKey.OP_CONNECT);
+                channelMap.put(entry.getKey(), socketChannel);
+                forwardBuffer.put(socketChannel, new ArrayList<ByteBuffer>());
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -163,8 +194,6 @@ public abstract class NIOReactor implements Runnable {
         socketChannel.configureBlocking(false);
         socketChannel.register(serverSelector, SelectionKey.OP_READ);
         System.out.println("registered incoming Channel:" + clientIP + "," + clientPort);
-        //track client connection
-        System.out.println("tracking " + (clientIP+ ":" + clientPort).hashCode());
         clientConnections.put((clientIP+ ":" + clientPort).hashCode(), socketChannel);
         clientWriteBuffer.put(socketChannel, new ArrayList<ByteBuffer>());
     }
@@ -176,8 +205,9 @@ public abstract class NIOReactor implements Runnable {
             channel.configureBlocking(false);
         }
         catch (Exception e) {
-            selectionKey.cancel();
             e.printStackTrace();
+            System.out.println("cannot finish connection, existing");
+            System.exit(1);
         }
     }
 
@@ -202,8 +232,6 @@ public abstract class NIOReactor implements Runnable {
             ret.put(readBuffer.array(), 0, readbytes);
             return Message.deserialize(ret.array());
         } catch (IOException e) {
-            //key.cancel();
-            //((SocketChannel) key.channel()).close();
             e.printStackTrace();
             return null;
         }

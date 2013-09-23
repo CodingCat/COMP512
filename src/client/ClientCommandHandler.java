@@ -105,7 +105,7 @@ public class ClientCommandHandler extends NIOClient {
             String location = arguments.elementAt(arguments.size() - 3) ;
             boolean car = Boolean.parseBoolean(arguments.elementAt(arguments.size()-2));
             boolean room = Boolean.parseBoolean(arguments.elementAt(arguments.size()-1));
-
+            send(new ReserveItineraryRequest(id, customer, flightNumbers, location, car, room));
         }
         catch(Exception e){
             System.out.println("EXCEPTION:");

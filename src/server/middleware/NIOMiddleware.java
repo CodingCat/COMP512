@@ -12,14 +12,7 @@ public class NIOMiddleware extends NIOReactor {
         XmlParser xmlParser = new XmlParser(confPath);
         //setup resource managers
         //support single resource manager for each resource for now
-        setClientEndPoint("flight",  xmlParser.getTuple2("flight").x,
-                xmlParser.getTuple2("flight").y);
-        setClientEndPoint("car",  xmlParser.getTuple2("car").x,
-                xmlParser.getTuple2("car").y);
-        setClientEndPoint("room",  xmlParser.getTuple2("room").x,
-                xmlParser.getTuple2("room").y);
-        setClientEndPoint("customer", xmlParser.getTuple2("customer").x,
-                xmlParser.getTuple2("customer").y);
+        setClientEndPoint(xmlParser.getPropertyMap());
     }
 
     @Override

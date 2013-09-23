@@ -19,8 +19,7 @@ public class NIOResourceManager extends NIOReactor{
         XmlParser xmlParser = new XmlParser(confPath);
         //setup resource managers
         //support single resource manager for each resource for now
-        setClientEndPoint("data",  xmlParser.getTuple2("data").x,
-                xmlParser.getTuple2("data").y);
+        setClientEndPoint(xmlParser.getPropertyMap());
     }
 
     // Reads a data item

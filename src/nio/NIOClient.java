@@ -17,18 +17,40 @@ public abstract class NIOClient implements Runnable {
 
     private Selector clientSelector;
     private SocketChannel toServerChannel;
-
+    private String serverIP;
+    private int serverPort;
     private ArrayList<Message> writebuffer;
 
-    public NIOClient(String serverIP, int serverPort) {
+    public NIOClient(String sIP, int sPort) {
         try {
             writebuffer = new ArrayList<Message>();
             clientSelector = Selector.open();
+            serverIP = sIP;
+            serverPort = sPort;
+            connectToServer();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void connectToServer() {
+        try {
             InetSocketAddress serverAddress = new InetSocketAddress(serverIP, serverPort);
             toServerChannel = SocketChannel.open();
             toServerChannel.configureBlocking(false);
             toServerChannel.connect(serverAddress);
             toServerChannel.register(clientSelector, SelectionKey.OP_CONNECT);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to Connect Server, existing...");
+            System.exit(1);
+        }
+    }
+
+    private void closeChannel() {
+        try {
+            toServerChannel.keyFor(clientSelector).cancel();
+            toServerChannel.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -47,6 +69,10 @@ public abstract class NIOClient implements Runnable {
             msg.transactionIDs.add((localIP + ":" + localPort).hashCode());
             toServerChannel.keyFor(clientSelector).interestOps(SelectionKey.OP_WRITE);
         } catch (Exception e) {
+            closeChannel();
+            if (!toServerChannel.isConnected()) {
+                connectToServer();
+            }
             e.printStackTrace();
         }
     }
@@ -68,7 +94,10 @@ public abstract class NIOClient implements Runnable {
             ret.put(readBuffer.array(), 0, readbytes);
             return Message.deserialize(ret.array());
         } catch (IOException e) {
-            selectedKey.cancel();
+            closeChannel();
+            if (!toServerChannel.isConnected()) {
+                connectToServer();
+            }
             e.printStackTrace();
             return null;
         }
@@ -85,6 +114,10 @@ public abstract class NIOClient implements Runnable {
             if (writebuffer.isEmpty())
                 toServerChannel.keyFor(clientSelector).interestOps(SelectionKey.OP_READ);
         } catch (Exception e) {
+            closeChannel();
+            if (!toServerChannel.isConnected()) {
+                connectToServer();
+            }
             e.printStackTrace();
         }
     }
@@ -96,6 +129,8 @@ public abstract class NIOClient implements Runnable {
             channel.configureBlocking(false);
         } catch (Exception e) {
             e.printStackTrace();
+            System.out.println("cannot connect to the server");
+            System.exit(1);
         }
     }
 
