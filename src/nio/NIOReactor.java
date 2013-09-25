@@ -63,12 +63,14 @@ public abstract class NIOReactor implements Runnable {
         try {
             int key = msg.transactionIDs.get(msg.transactionIDs.size() - 1);
             SocketChannel socketChannel = clientConnections.get(key);
-            msg.transactionIDs.remove(msg.transactionIDs.size() - 1);
-            synchronized (clientWriteBuffer) {
-                clientWriteBuffer.get(socketChannel).add(ByteBuffer.wrap(Message.serialize(msg)));
+            if (socketChannel != null) {
+                msg.transactionIDs.remove(msg.transactionIDs.size() - 1);
+                synchronized (clientWriteBuffer) {
+                    clientWriteBuffer.get(socketChannel).add(ByteBuffer.wrap(Message.serialize(msg)));
+                }
+                socketChannel.keyFor(serverSelector).interestOps(SelectionKey.OP_WRITE);
+                serverSelector.wakeup();
             }
-            socketChannel.keyFor(serverSelector).interestOps(SelectionKey.OP_WRITE);
-            serverSelector.wakeup();
         } catch (Exception e) {
             e.printStackTrace();
         }

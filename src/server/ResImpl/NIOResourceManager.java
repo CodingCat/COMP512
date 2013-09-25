@@ -413,8 +413,8 @@ public class NIOResourceManager extends NIOReactor{
                         for (int i = 0; i < rires.getFlightnumbers().size(); i++) {
                             addFlight(rires.getId(),
                                     Integer.parseInt((String) rires.getFlightnumbers().get(i)),
-                                    Integer.parseInt((String) rires.getSeatnumber().get(i)),
-                                    Integer.parseInt((String) rires.getFlightprice().get(i)));
+                                    (Integer) rires.getSeatnumber().get(i),
+                                    (Integer) rires.getFlightprice().get(i));
                         }
                         //cars
                         if (rires.isCarflag())

@@ -100,11 +100,11 @@ public class ClientCommandHandler extends NIOClient {
             int id = Integer.parseInt(arguments.elementAt(1));
             int customer = Integer.parseInt(arguments.elementAt(2));
             Vector flightNumbers = new Vector();
-            for(int i=0;i<arguments.size()-6;i++)
-                flightNumbers.addElement(arguments.elementAt(3+i));
+            for(int i= 0; i + 3 < arguments.size() - 3;i++)
+                flightNumbers.addElement(arguments.elementAt(3 + i));
             String location = arguments.elementAt(arguments.size() - 3) ;
-            boolean car = Boolean.parseBoolean(arguments.elementAt(arguments.size()-2));
-            boolean room = Boolean.parseBoolean(arguments.elementAt(arguments.size()-1));
+            boolean car = Boolean.parseBoolean(arguments.elementAt(arguments.size() - 2));
+            boolean room = Boolean.parseBoolean(arguments.elementAt(arguments.size() - 1));
             send(new ReserveItineraryRequest(id, customer, flightNumbers, location, car, room));
         }
         catch(Exception e){
