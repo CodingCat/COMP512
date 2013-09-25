@@ -1,5 +1,6 @@
 package ResImpl;
 
+import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -38,7 +39,7 @@ public class Middleware implements ResourceManager
 		// Create and install a security manager
 		if (System.getSecurityManager() == null)
 		{
-			// System.setSecurityManager(new RMISecurityManager());
+			System.setSecurityManager(new RMISecurityManager());
 		}
 
 		/*

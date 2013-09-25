@@ -3,6 +3,7 @@ package clientsrc;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.rmi.RMISecurityManager;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.StringTokenizer;
@@ -67,7 +68,7 @@ public class client
 
 		if (System.getSecurityManager() == null)
 		{
-			// System.setSecurityManager(new RMISecurityManager());
+			System.setSecurityManager(new RMISecurityManager());
 		}
 
 		System.out.println("\n\n\tClient Interface");

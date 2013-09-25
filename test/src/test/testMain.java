@@ -4,7 +4,8 @@ public class testMain
 {
 	public static void main(String[] args)
 	{
-		String dir = "/home/kai/Kai/servercode/config/mw_config.xml";
+		String dir = args[0];
+		// "/home/kai/Kai/servercode/config/mw_config.xml";
 		XmlParser Parser = new XmlParser(dir);
 		String flight_server = Parser.getTuple2("flight").x;
 		int flight_port = Parser.getTuple2("flight").y;
