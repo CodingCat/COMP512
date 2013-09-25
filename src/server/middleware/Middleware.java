@@ -1,4 +1,9 @@
-package ResImpl;
+package server.middleware;
+
+import server.ResImpl.RMHashtable;
+import server.ResImpl.RMItem;
+import server.ResImpl.Trace;
+import server.ResInterface.ResourceManager;
 
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
@@ -7,8 +12,6 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Vector;
-
-import ResInterface.ResourceManager;
 
 public class Middleware implements ResourceManager
 {
@@ -309,8 +312,8 @@ public class Middleware implements ResourceManager
 		System.out.println("cpslab");
 		int cid = RMlist.get(carRM).newCustomer(id);
 		// Generate a globally unique ID for the new customer
-		RMlist.get(flightRM).addNewCustomer(cid);
-		RMlist.get(hotelRM).addNewCustomer(cid);
+		RMlist.get(flightRM).newCustomer(cid);
+		RMlist.get(hotelRM).newCustomer(cid);
 		return cid;
 	}
 

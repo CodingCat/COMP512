@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_comp512" default="compile.module.comp512">
+  <dirname property="module.comp512.basedir" file="${ant.file.module_comp512}"/>
+  
+  <property name="module.jdk.home.comp512" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.comp512" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.comp512" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.comp512" value="${compiler.args}"/>
+  
+  <property name="comp512.output.dir" value="${module.comp512.basedir}/out/production/COMP512"/>
+  <property name="comp512.testoutput.dir" value="${module.comp512.basedir}/out/test/COMP512"/>
+  
+  <path id="comp512.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="comp512.module.production.classpath">
+    <path refid="${module.jdk.classpath.comp512}"/>
+  </path>
+  
+  <path id="comp512.runtime.production.module.classpath">
+    <pathelement location="${comp512.output.dir}"/>
+  </path>
+  
+  <path id="comp512.module.classpath">
+    <path refid="${module.jdk.classpath.comp512}"/>
+    <pathelement location="${comp512.output.dir}"/>
+  </path>
+  
+  <path id="comp512.runtime.module.classpath">
+    <pathelement location="${comp512.testoutput.dir}"/>
+    <pathelement location="${comp512.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.comp512">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.comp512">
+    <patternset refid="excluded.from.module.comp512"/>
+  </patternset>
+  
+  <path id="comp512.module.sourcepath">
+    <dirset dir="${module.comp512.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.comp512" depends="compile.module.comp512.production,compile.module.comp512.tests" description="Compile module COMP512"/>
+  
+  <target name="compile.module.comp512.production" depends="register.custom.compilers" description="Compile module COMP512; production classes">
+    <mkdir dir="${comp512.output.dir}"/>
+    <javac2 destdir="${comp512.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.comp512}/javac">
+      <compilerarg line="${compiler.args.comp512}"/>
+      <bootclasspath refid="comp512.module.bootclasspath"/>
+      <classpath refid="comp512.module.production.classpath"/>
+      <src refid="comp512.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.comp512"/>
+    </javac2>
+    
+    <copy todir="${comp512.output.dir}">
+      <fileset dir="${module.comp512.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.comp512.tests" depends="register.custom.compilers,compile.module.comp512.production" description="compile module COMP512; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.comp512" description="cleanup module">
+    <delete dir="${comp512.output.dir}"/>
+    <delete dir="${comp512.testoutput.dir}"/>
+  </target>
+</project>

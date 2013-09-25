@@ -1,4 +1,7 @@
-package ResImpl;
+package test;
+
+import server.middleware.Middleware;
+import util.XmlParser;
 
 public class testMain
 {

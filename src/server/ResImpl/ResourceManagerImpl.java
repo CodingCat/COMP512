@@ -2,7 +2,9 @@
 // adapted from Kevin T. Manley
 // CSE 593
 //
-package ResImpl;
+package server.ResImpl;
+
+import server.ResInterface.ResourceManager;
 
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
@@ -13,7 +15,6 @@ import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import ResInterface.ResourceManager;
 
 public class ResourceManagerImpl implements ResourceManager
 {

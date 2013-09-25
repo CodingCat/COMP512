@@ -64,13 +64,13 @@ public class ClientCommandHandler extends NIOClient {
                 "Also book zero or more cars/rooms at a location.\n" +
                 "Usage:\titinerary,<id>,<customerid>,<flightnumber1>....<flightnumberN>," +
                 "<LocationToBookCarsOrRooms>,<NumberOfCars>,<NumberOfRoom>");
-        supportCommands.put("quit", "Quitting client.\nPurpose:\nExit the client\nUsage:\tquit");
+        supportCommands.put("quit", "Quitting Client.\nPurpose:\nExit the Client\nUsage:\tquit");
         supportCommands.put("newcustomerid", "Creating new customer providing an id\tPurpose:\nCreates a " +
                 " new customer with the id provided\tUsage:\tnewcustomerid, <id>, <customerid>");
     }
 
     private void listCommands() {
-        System.out.println("\nWelcome to the client interface provided to test your project.");
+        System.out.println("\nWelcome to the Client interface provided to test your project.");
         System.out.println("Commands accepted by the interface are:");
         for (String command : supportCommands.keySet()) System.out.println(command);
         System.out.println("\ntype help, <commandname> for detailed info(NOTE the use of comma).");
@@ -470,7 +470,7 @@ public class ClientCommandHandler extends NIOClient {
     }
 
     public void quit(Vector<String> arguments) {
-        System.out.println("Quitting client.");
+        System.out.println("Quitting Client.");
         System.exit(1);
     }
 
