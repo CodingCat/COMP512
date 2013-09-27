@@ -531,7 +531,7 @@ public class MiddlewareServer implements ResourceManager {
 		            // get a reference to the rmiregistry
 		            Registry registry = LocateRegistry.getRegistry(flightServer, port);
 		            // get the proxy and the remote reference by rmiregistry lookup
-		            rmFlight = (FlightInterface) registry.lookup("Group24FlightRM");
+		            rmFlight = (FlightInterface) registry.lookup("Group28FlightRM");
 		            if(rmFlight!=null)
 		            {
 		                System.out.println("\nConnected to FlightRM\n");
@@ -546,7 +546,7 @@ public class MiddlewareServer implements ResourceManager {
 		            // get a reference to the rmiregistry
 		            Registry registry = LocateRegistry.getRegistry(carServer, port);
 		            // get the proxy and the remote reference by rmiregistry lookup
-		            rmCar = (CarInterface) registry.lookup("Group24CarRM");
+		            rmCar = (CarInterface) registry.lookup("Group28CarRM");
 		            if(rmCar!=null)
 		            {
 		                System.out.println("\nConnected to CarRM\n");
@@ -561,7 +561,7 @@ public class MiddlewareServer implements ResourceManager {
 		            // get a reference to the rmiregistry
 		            Registry registry = LocateRegistry.getRegistry(hotelServer, port);
 		            // get the proxy and the remote reference by rmiregistry lookup
-		            rmHotel = (HotelInterface) registry.lookup("Group24HotelRM");
+		            rmHotel = (HotelInterface) registry.lookup("Group28HotelRM");
 		            if(rmHotel!=null)
 		            {
 		                System.out.println("\nConnected to HotelRM\n");
@@ -586,7 +586,7 @@ public class MiddlewareServer implements ResourceManager {
         	ResourceManager rm = (ResourceManager) UnicastRemoteObject.exportObject(obj, 0);
             // Bind the remote object's stub in the registry
             Registry registry = LocateRegistry.getRegistry(port);
-            registry.rebind("Group24ResourceManager", rm);
+            registry.rebind("Group28ResourceManager", rm);
 
             System.err.println("Server ready");
         }

@@ -102,7 +102,7 @@ public class CarResourceManager extends GenericResourceManager implements CarInt
 
             // Bind the remote object's stub in the registry
             Registry registry = LocateRegistry.getRegistry(port);
-            registry.rebind("Group24CarRM", rm);
+            registry.rebind("Group28CarRM", rm);
 
             System.err.println("Car Server ready");
         } catch (Exception e) {

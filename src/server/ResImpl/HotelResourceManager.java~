@@ -9,7 +9,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import server.ResInterface.CarInterface;
 import server.ResInterface.HotelInterface;
 
 public class HotelResourceManager extends GenericResourceManager implements HotelInterface

@@ -105,7 +105,7 @@ public class FlightResourceManager extends GenericResourceManager implements Fli
 
             // Bind the remote object's stub in the registry
             Registry registry = LocateRegistry.getRegistry(port);
-            registry.rebind("Group24FlightRM", rm);
+            registry.rebind("Group28FlightRM", rm);
 
             System.err.println("Flight Server ready");
         } catch (Exception e) {

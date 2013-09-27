@@ -102,7 +102,7 @@ public class HotelResourceManager extends GenericResourceManager implements Hote
 
             // Bind the remote object's stub in the registry
             Registry registry = LocateRegistry.getRegistry(port);
-            registry.rebind("Group24HotelRM", rm);
+            registry.rebind("Group28HotelRM", rm);
 
             System.err.println("Hotel Server ready");
         } catch (Exception e) {

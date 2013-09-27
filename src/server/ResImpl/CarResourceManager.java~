@@ -9,7 +9,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import ResInterface.CarInterface;
+import server.ResInterface.CarInterface;
 
 public class CarResourceManager extends GenericResourceManager implements CarInterface
 {
