@@ -3,9 +3,7 @@
  */
 package server.middleware;
 
-import server.ResImpl.RMHashtable;
-import server.ResImpl.RMItem;
-import server.ResImpl.Trace;
+import server.ResImpl.*;
 import server.ResInterface.*;
 
 import java.rmi.RemoteException;
@@ -586,7 +584,7 @@ public class MiddlewareServer implements ResourceManager {
         	ResourceManager rm = (ResourceManager) UnicastRemoteObject.exportObject(obj, 0);
             // Bind the remote object's stub in the registry
             Registry registry = LocateRegistry.getRegistry(port);
-            registry.rebind("Group24ResourceManager", rm);
+            registry.rebind("Group28ResourceManager", rm);
 
             System.err.println("Server ready");
         }

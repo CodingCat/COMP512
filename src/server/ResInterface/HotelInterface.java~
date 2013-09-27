@@ -1,12 +1,12 @@
 /*
  * Author: Navjot Singh
  */
-package server.ResInterface;
+package ResInterface;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import server.ResImpl.RMItem;
+import ResImpl.RMItem;
 
 public interface HotelInterface extends Remote
 {

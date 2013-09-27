@@ -1,0 +1,69 @@
+#
+#  Yousuf Ahmad
+#  COMP 512 Project
+#  Fall 2014
+#
+
+
+About
+-----
+
+This is a slightly modified version of the project that lets you specify 
+a custom RMI port when starting the server and client programs.
+
+
+Instructions
+------------
+
+
+1. Extract the project into your home directory (~):
+
+[~] tar xvf comp512.tar
+
+
+2. Edit the source code to specify your unique RMI binding:
+
+* Files to edit:
+  ~/comp512/project/server/ResImpl/ResourceManagerImpl.java
+  ~/comp512/project/client/client.java
+* String to replace: "MyGroupResourceManager"
+
+
+3. Compile the code:
+
+[~] cd ~/comp512/project
+[~/comp512/project] javac server/*/*.java client/*.java
+
+
+4. Start (your own) RMI registry on any available port:
+
+[~] cd ~/comp512/project/server
+[~/comp512/project/server] rmiregistry <port> &
+
+
+5. Edit the policy files to point to your codebase:
+
+* Files to edit:
+  ~/comp512/project/server/server.policy
+  ~/comp512/project/client/client.policy
+* Replace <the_path> with the absolute path to ~
+
+6.Start FlightRM:
+java -Djava.security.poly=server/server.policy -Djava.rmi.server.codebase=file:/home/2013/nsingh22/Distributed_Project/gitDir/src/server/ server.ResImpl.FlightResourceManager 8228
+
+Start MiddleWare server with:
+java -Djava.security.policy=server/server.policy -Djava.rmi.server.codebase=file:/home/2013/nsingh22/Distributed_Project/gitDir/src/server/ server.middleware.MiddlewareServer 8228 flight teaching
+
+
+7. Start the client (on any other machine):
+
+[~] cd ~/comp512/project/client
+[~/comp512/project/client] java -Djava.security.policy=client/client.policy -classpath .:../server client.client teaching 8228
+
+
+8. Test it with a command:
+
+> newcar,1,Abc,10,100
+
+
+

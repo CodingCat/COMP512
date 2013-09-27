@@ -6,7 +6,7 @@ package server.ResInterface;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import server.ResImpl.RMItem;
+import ResImpl.RMItem;
 
 
 public interface CarInterface extends Remote

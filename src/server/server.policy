@@ -1,0 +1,5 @@
+grant codeBase "file:/home/2013/nsingh22/Distributed_Project/gitDir/src/server/" {
+    permission java.security.AllPermission;
+};
+
+
