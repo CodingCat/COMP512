@@ -350,12 +350,18 @@ public class NIOResourceManager extends NIOReactor{
                     break;
                 case DELETE_CUSTOMER_RESPONSE:
                     DelCustomerResponse dcr = (DelCustomerResponse) rmsg;
-                    for (int i = 0; i < dcr.getFlightnumbers().size(); i++)
-                        deleteFlight(0, dcr.getFlightnumbers().get(i));
-                    for (int i = 0; i < dcr.getCarlocation().size(); i++)
-                        deleteCars(0, dcr.getCarlocation().get(i));
-                    for (int i = 0; i < dcr.getRoomlocation().size(); i++)
-                        deleteRooms(0, dcr.getRoomlocation().get(i));
+                    for (int i = 0; i < dcr.getFlightnumbers().size(); i++) {
+                        addFlight(0, dcr.getFlightnumbers().get(i), dcr.getSeatnumber().get(i),
+                                dcr.getFlightprice().get(i));
+                    }
+                    for (int i = 0; i < dcr.getCarlocation().size(); i++) {
+                        addCars(0, dcr.getCarlocation().get(i), dcr.getCarnum().get(i),
+                                dcr.getCarprice().get(i));
+                    }
+                    for (int i = 0; i < dcr.getRoomlocation().size(); i++) {
+                        addRooms(0, dcr.getRoomlocation().get(i), dcr.getRoomnum().get(i),
+                                dcr.getRoomprice().get(i));
+                    }
                     break;
                 case QUERY_CUSTOMER_RESPONSE:
                     //do not cache bill
