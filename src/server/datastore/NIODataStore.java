@@ -13,8 +13,12 @@ import java.util.Vector;
 public class NIODataStore extends NIOReactor {
 
     private Object flightreservelock = new Object();
+    private Object flightaddlock = new Object();
     private Object carreservelock = new Object();
+    private Object caraddlock = new Object();
     private Object roomreservelock = new Object();
+    private Object roomaddlock = new Object();
+    private Object customeraddlock = new Object();
 
     protected RMHashtable m_itemHT = new RMHashtable();
 
@@ -366,6 +370,47 @@ public class NIODataStore extends NIOReactor {
         reply(rrres);
     }
 
+    private void addCar(AddCarRequest acreq) {
+        AddCarResponse acr = null;
+        synchronized (caraddlock) {
+            boolean success = addCars(acreq.getID(), acreq.getLocation(),
+                    acreq.getCarnum(), acreq.getPrice());
+            int carnum = queryCars(acreq.getID(), acreq.getLocation());
+            int carprice = queryCarsPrice(acreq.getID(), acreq.getLocation());
+            acr = new AddCarResponse(acreq.getID(),
+                    acreq.getLocation(), carnum, carprice, success);
+        }
+        acr.transactionIDs = (ArrayList<Integer>) acreq.transactionIDs.clone();
+        reply(acr);
+    }
+
+    private void addRoom (AddRoomRequest arreq) {
+        AddRoomResponse arr = null;
+        synchronized (roomaddlock) {
+            boolean success = addRooms(arreq.getID(), arreq.getLocation(),
+                    arreq.getRoomnum(), arreq.getPrice());
+            int roomnum = queryRooms(arreq.getID(), arreq.getLocation());
+            int roomprice = queryRoomsPrice(arreq.getID(), arreq.getLocation());
+            arr = new AddRoomResponse(arreq.getID(),
+                    arreq.getLocation(), roomnum, roomprice, success);
+        }
+        arr.transactionIDs = (ArrayList<Integer>) arreq.transactionIDs.clone();
+        reply(arr);
+    }
+
+    private void addFlight (AddFlightRequest afreq) {
+        AddFlightResponse afr = null;
+        synchronized (flightaddlock) {
+            boolean success = addFlight(afreq.getID(), afreq.getFlightNum(),
+                    afreq.getFlightSeat(), afreq.getFlightPrice());
+            int seat = queryFlight(afreq.getID(), afreq.getFlightNum());
+            int price = queryFlightPrice(afreq.getID(), afreq.getFlightNum());
+            afr = new AddFlightResponse(afreq.getID(),
+                    afreq.getFlightNum(), seat, price, success);
+        }
+        afr.transactionIDs = (ArrayList<Integer>) afreq.transactionIDs.clone();
+        reply(afr);
+    }
 
     @Override
     public void dispatch(Message msg) {
@@ -373,9 +418,7 @@ public class NIODataStore extends NIOReactor {
             ReservationMessage rmsg = (ReservationMessage) msg;
             switch (rmsg.getMessageType()) {
                 case ADD_FLIGHT_REQUEST:
-                    AddFlightRequest afreq = (AddFlightRequest) rmsg;
-                    addFlight(afreq.getID(), afreq.getFlightNum(),
-                            afreq.getFlightSeat(), afreq.getFlightPrice());
+                    addFlight((AddFlightRequest) rmsg);
                     break;
                 case DELETE_FLIGHT_REQUEST:
                     DelFlightRequest dfreq = (DelFlightRequest) rmsg;
@@ -394,9 +437,7 @@ public class NIODataStore extends NIOReactor {
                     reserveFlight((ReserveFlightRequest) rmsg);
                     break;
                 case ADD_CAR_REQUEST:
-                    AddCarRequest acreq = (AddCarRequest) rmsg;
-                    addCars(acreq.getID(), acreq.getLocation(),
-                            acreq.getCarnum(), acreq.getPrice());
+                    addCar((AddCarRequest) rmsg);
                     break;
                 case DELETE_CAR_REQUEST:
                     DelCarRequest dcreq = (DelCarRequest) rmsg;
@@ -416,8 +457,7 @@ public class NIODataStore extends NIOReactor {
                     reserveCar((ReserveCarRequest) rmsg);
                     break;
                 case ADD_ROOM_REQUEST:
-                    AddRoomRequest arreq = (AddRoomRequest) rmsg;
-                    addRooms(arreq.getID(), arreq.getLocation(), arreq.getRoomnum(), arreq.getPrice());
+                    addRoom((AddRoomRequest) rmsg);
                     break;
                 case DELETE_ROOM_REQUEST:
                     DelRoomRequest drreq = (DelRoomRequest) rmsg;

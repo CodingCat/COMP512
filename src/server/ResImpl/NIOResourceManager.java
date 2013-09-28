@@ -242,9 +242,6 @@ public class NIOResourceManager extends NIOReactor{
             ReservationMessage rmsg = (ReservationMessage) msg;
             switch (rmsg.getMessageType()) {
                 case ADD_FLIGHT_REQUEST:
-                    AddFlightRequest afreq = (AddFlightRequest) rmsg;
-                    addFlight(afreq.getID(), afreq.getFlightNum(),
-                            afreq.getFlightSeat(), afreq.getFlightPrice());
                     forward("data", rmsg);
                     break;
                 case DELETE_FLIGHT_REQUEST:
@@ -333,6 +330,9 @@ public class NIOResourceManager extends NIOReactor{
                         forward("data", rmsg);
                     }
                     break;
+                case ADD_CAR_RESPONSE:
+                case ADD_FLIGHT_RESPONSE:
+                case ADD_ROOM_RESPONSE:
                 case QUERY_FLIGHT_RESPONSE:
                 case QUERY_FLIGHTPRICE_RESPONSE:
                 case QUERY_CAR_RESPONSE:
@@ -376,15 +376,30 @@ public class NIOResourceManager extends NIOReactor{
     private void addCacheEntry(ReservationMessage rmsg) {
         try {
             switch (rmsg.getMessageType()) {
+                case ADD_FLIGHT_RESPONSE:
+                    AddFlightResponse afr = (AddFlightResponse) rmsg;
+                    if (afr.isSuccess())
+                        addFlight(afr.getID(), afr.getFlightnum(), afr.getSeatnum(), afr.getPrice());
+                    break;
                 case QUERY_FLIGHT_RESPONSE:
                 case QUERY_FLIGHTPRICE_RESPONSE:
                     QueryFlightResponse qfq = (QueryFlightResponse) rmsg;
                     addFlight(qfq.getID(), qfq.getFlightnumber(), qfq.getSeat(), qfq.getPrice());
                     break;
+                case ADD_CAR_RESPONSE:
+                    AddCarResponse acr = (AddCarResponse) rmsg;
+                    if (acr.isSuccess())
+                        addCars(acr.getID(), acr.getLocation(), acr.getCarnum(), acr.getCarprice());
+                    break;
                 case QUERY_CAR_RESPONSE:
                 case QUERY_CARPRICE_RESPONSE:
                     QueryCarResponse qcr = (QueryCarResponse) rmsg;
                     addCars(qcr.getID(), qcr.getLocation(), qcr.getCarNum(), qcr.getPrice());
+                    break;
+                case ADD_ROOM_RESPONSE:
+                    AddRoomResponse arr = (AddRoomResponse) rmsg;
+                    if (arr.isSuccess())
+                        addRooms(arr.getID(), arr.getLocation(), arr.getRoomnum(), arr.getRoomprice());
                     break;
                 case QUERY_ROOM_RESPONSE:
                 case QUERY_ROOMPRICE_RESPONSE:
