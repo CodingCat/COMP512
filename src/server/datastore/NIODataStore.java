@@ -120,7 +120,8 @@ public class NIODataStore extends NIOReactor {
                 return true;
             }
             else{
-                Trace.info("RM::deleteItem(" + id + ", " + key + ") item can't be deleted because some customers reserved it" );
+                Trace.info("RM::deleteItem(" + id + ", " + key + ") item can't be " +
+                        "deleted because some customers reserved it" );
                 return false;
             }
         } // if
@@ -412,6 +413,41 @@ public class NIODataStore extends NIOReactor {
         reply(afr);
     }
 
+    private void queryflight (QueryFlightRequest qfreq) {
+        int seat = queryFlight(qfreq.getID(), qfreq.getFlightNum());
+        int price = queryFlightPrice(qfreq.getID(), qfreq.getFlightNum());
+        QueryFlightResponse qfres = new QueryFlightResponse(qfreq.getID(), qfreq.getFlightNum(), seat, price);
+        qfres.transactionIDs = (ArrayList<Integer>) qfreq.transactionIDs.clone();
+        reply(qfres);
+    }
+
+    private void querycar (QueryCarRequest qcreq) {
+        int carnum = queryCars(qcreq.getID(), qcreq.getLocation());
+        int carprice = queryCarsPrice(qcreq.getID(), qcreq.getLocation());
+        QueryCarResponse qcres = new QueryCarResponse(qcreq.getID(), qcreq.getLocation(),
+                carnum, carprice);
+        qcres.transactionIDs = (ArrayList<Integer>) qcreq.transactionIDs.clone();
+        reply(qcres);
+    }
+
+    private void queryroom (QueryRoomRequest qrreq) {
+        int roomnum = queryRooms(qrreq.getID(), qrreq.getLocation());
+        int roomprice = queryRoomsPrice(qrreq.getID(), qrreq.getLocation());
+        QueryRoomResponse qrres = new QueryRoomResponse(qrreq.getID(), qrreq.getLocation(),
+                roomnum, roomprice);
+        qrres.transactionIDs = (ArrayList<Integer>) qrreq.transactionIDs.clone();
+        reply(qrres);
+    }
+
+    private void querycustomer (QueryCustomerRequest qcureq) {
+        QueryCustomerResponse qcures = new QueryCustomerResponse(
+                qcureq.getID(),
+                qcureq.getCustomerid(), queryCustomerInfo(qcureq.getID(),
+                qcureq.getCustomerid()));
+        qcures.transactionIDs = (ArrayList<Integer>) qcureq.transactionIDs.clone();
+        reply(qcures);
+    }
+
     @Override
     public void dispatch(Message msg) {
         if (msg instanceof ReservationMessage) {
@@ -426,12 +462,7 @@ public class NIODataStore extends NIOReactor {
                     break;
                 case QUERY_FLIGHT_REQUEST:
                 case QUERY_FLIGHTPRICE_REQUEST:
-                    QueryFlightRequest qfreq = (QueryFlightRequest) rmsg;
-                    int seat = queryFlight(qfreq.getID(), qfreq.getFlightNum());
-                    int price = queryFlightPrice(qfreq.getID(), qfreq.getFlightNum());
-                    QueryFlightResponse qfres = new QueryFlightResponse(qfreq.getID(), qfreq.getFlightNum(), seat, price);
-                    qfres.transactionIDs = (ArrayList<Integer>) qfreq.transactionIDs.clone();
-                    reply(qfres);
+                    queryflight((QueryFlightRequest) rmsg);
                     break;
                 case RESERVE_FLIGHT_REQUEST:
                     reserveFlight((ReserveFlightRequest) rmsg);
@@ -445,13 +476,7 @@ public class NIODataStore extends NIOReactor {
                     break;
                 case QUERY_CAR_REQUEST:
                 case QUERY_CARPRICE_REQUEST:
-                    QueryCarRequest qcreq = (QueryCarRequest) rmsg;
-                    int carnum = queryCars(qcreq.getID(), qcreq.getLocation());
-                    int carprice = queryCarsPrice(qcreq.getID(), qcreq.getLocation());
-                    QueryCarResponse qcres = new QueryCarResponse(qcreq.getID(), qcreq.getLocation(),
-                            carnum, carprice);
-                    qcres.transactionIDs = (ArrayList<Integer>) qcreq.transactionIDs.clone();
-                    reply(qcres);
+                    querycar((QueryCarRequest) rmsg);
                     break;
                 case RESERVE_CAR_REQUEST:
                     reserveCar((ReserveCarRequest) rmsg);
@@ -465,13 +490,7 @@ public class NIODataStore extends NIOReactor {
                     break;
                 case QUERY_ROOM_REQUEST:
                 case QUERY_ROOMPRICE_REQUEST:
-                    QueryRoomRequest qrreq = (QueryRoomRequest) rmsg;
-                    int roomnum = queryRooms(qrreq.getID(), qrreq.getLocation());
-                    int roomprice = queryRoomsPrice(qrreq.getID(), qrreq.getLocation());
-                    QueryRoomResponse qrres = new QueryRoomResponse(qrreq.getID(), qrreq.getLocation(),
-                            roomnum, roomprice);
-                    qrres.transactionIDs = (ArrayList<Integer>) qrreq.transactionIDs.clone();
-                    reply(qrres);
+                    queryroom((QueryRoomRequest) rmsg);
                     break;
                 case RESERVE_ROOM_REQUEST:
                     reserveRoom((ReserveRoomRequest) rmsg);
@@ -493,11 +512,7 @@ public class NIODataStore extends NIOReactor {
                     }
                     break;
                 case QUERY_CUSTOMER_REQUEST:
-                    QueryCustomerRequest qcureq = (QueryCustomerRequest) rmsg;
-                    QueryCustomerResponse qcures = new QueryCustomerResponse(qcureq.getID(),
-                            qcureq.getCustomerid(), queryCustomerInfo(qcureq.getID(), qcureq.getCustomerid()));
-                    qcures.transactionIDs = (ArrayList<Integer>) qcureq.transactionIDs.clone();
-                    reply(qcures);
+                    querycustomer((QueryCustomerRequest) rmsg);
                     break;
                 case RESERVE_ITINERARY_REQUEST:
                     ReserveItineraryRequest rir = (ReserveItineraryRequest) rmsg;
