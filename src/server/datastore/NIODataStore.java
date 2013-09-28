@@ -448,6 +448,75 @@ public class NIODataStore extends NIOReactor {
         reply(qcures);
     }
 
+    private void itinerary (ReserveItineraryRequest  rir) {
+        boolean transactionSuccess = true;
+        for (int i = 0; i < rir.getFlightNumbers().size(); i++) {
+            transactionSuccess = transactionSuccess &&
+                    reserveFlight(rir.getID(), rir.getCustomerid(),
+                            Integer.parseInt((String) rir.getFlightNumbers().get(i)));
+        }
+        if (!transactionSuccess) return;
+        if (rir.getCarflag()) {
+            transactionSuccess = transactionSuccess &&
+                    reserveCar(rir.getID(), rir.getCustomerid(), rir.getLocation());
+            if (!transactionSuccess) {
+                //recover flight, and break;
+                for (int i = 0; i < rir.getFlightNumbers().size(); i++) {
+                    int p = queryFlightPrice(rir.getID(),
+                            Integer.parseInt((String) rir.getFlightNumbers().get(i)));
+                    addFlight(rir.getID(),
+                            (Integer) rir.getFlightNumbers().get(i),
+                            1, p);
+                }
+                return;
+            }
+        }
+        if (rir.getRoomflag()) {
+            transactionSuccess = transactionSuccess &&
+                    reserveRoom(rir.getID(), rir.getCustomerid(), rir.getLocation());
+            if (!transactionSuccess) {
+                //recover flight, and break;
+                for (int i = 0; i < rir.getFlightNumbers().size(); i++) {
+                    int p = queryFlightPrice(rir.getID(),
+                            (Integer) rir.getFlightNumbers().get(i));
+                    addFlight(rir.getID(),
+                            (Integer) rir.getFlightNumbers().get(i),
+                            1, p);
+                }
+                //recover car, and break;
+                int p = queryCarsPrice(rir.getID(), rir.getLocation());
+                addCars(rir.getID(), rir.getLocation(), 1, p);
+                return;
+            }
+        }
+
+        Vector seats = new Vector();
+        Vector prices = new Vector();
+        for (int i = 0; i < rir.getFlightNumbers().size(); i++) {
+            seats.add(queryFlight(rir.getID(),
+                    Integer.parseInt((String) rir.getFlightNumbers().get(i))));
+            prices.add(queryFlightPrice(rir.getID(),
+                    Integer.parseInt((String)  rir.getFlightNumbers().get(i))));
+        }
+        int carnum = -1;
+        int carprice = -1;
+        int roomnum = -1;
+        int roomprice = -1;
+        if (rir.getCarflag()) {
+            carnum = queryCars(rir.getID(), rir.getLocation());
+            carprice = queryCarsPrice(rir.getID(), rir.getLocation());
+        }
+        if (rir.getRoomflag()) {
+            roomnum = queryRooms(rir.getID(), rir.getLocation());
+            roomprice = queryRoomsPrice(rir.getID(), rir.getLocation());
+        }
+        ReserveItineraryResponse rires = new ReserveItineraryResponse(rir.getID(),
+                rir.getFlightNumbers(), seats, prices, rir.getLocation(), carnum, carprice,
+                roomnum, roomprice, rir.getCarflag(), rir.getRoomflag(), transactionSuccess);
+        rires.transactionIDs = (ArrayList<Integer>) rir.transactionIDs.clone();
+        replyAll(rires);
+    }
+
     @Override
     public void dispatch(Message msg) {
         if (msg instanceof ReservationMessage) {
@@ -515,73 +584,7 @@ public class NIODataStore extends NIOReactor {
                     querycustomer((QueryCustomerRequest) rmsg);
                     break;
                 case RESERVE_ITINERARY_REQUEST:
-                    ReserveItineraryRequest rir = (ReserveItineraryRequest) rmsg;
-                    boolean transactionSuccess = true;
-                    for (int i = 0; i < rir.getFlightNumbers().size(); i++) {
-                        transactionSuccess = transactionSuccess &&
-                                reserveFlight(rir.getID(), rir.getCustomerid(),
-                                        Integer.parseInt((String) rir.getFlightNumbers().get(i)));
-                    }
-                    if (!transactionSuccess) break;
-                    if (rir.getCarflag()) {
-                        transactionSuccess = transactionSuccess &&
-                                reserveCar(rir.getID(), rir.getCustomerid(), rir.getLocation());
-                        if (!transactionSuccess) {
-                            //recover flight, and break;
-                            for (int i = 0; i < rir.getFlightNumbers().size(); i++) {
-                                int p = queryFlightPrice(rir.getID(),
-                                        Integer.parseInt((String) rir.getFlightNumbers().get(i)));
-                                addFlight(rir.getID(),
-                                        (Integer) rir.getFlightNumbers().get(i),
-                                        1, p);
-                            }
-                            break;
-                        }
-                    }
-                    if (rir.getRoomflag()) {
-                        transactionSuccess = transactionSuccess &&
-                                reserveRoom(rir.getID(), rir.getCustomerid(), rir.getLocation());
-                        if (!transactionSuccess) {
-                            //recover flight, and break;
-                            for (int i = 0; i < rir.getFlightNumbers().size(); i++) {
-                                int p = queryFlightPrice(rir.getID(),
-                                        (Integer) rir.getFlightNumbers().get(i));
-                                addFlight(rir.getID(),
-                                        (Integer) rir.getFlightNumbers().get(i),
-                                        1, p);
-                            }
-                            //recover car, and break;
-                            int p = queryCarsPrice(rir.getID(), rir.getLocation());
-                            addCars(rir.getID(), rir.getLocation(), 1, p);
-                            break;
-                        }
-                    }
-
-                    Vector seats = new Vector();
-                    Vector prices = new Vector();
-                    for (int i = 0; i < rir.getFlightNumbers().size(); i++) {
-                        seats.add(queryFlight(rir.getID(),
-                                Integer.parseInt((String) rir.getFlightNumbers().get(i))));
-                        prices.add(queryFlightPrice(rir.getID(),
-                                Integer.parseInt((String)  rir.getFlightNumbers().get(i))));
-                    }
-                    carnum = -1;
-                    carprice = -1;
-                    roomnum = -1;
-                    roomprice = -1;
-                    if (rir.getCarflag()) {
-                        carnum = queryCars(rir.getID(), rir.getLocation());
-                        carprice = queryCarsPrice(rir.getID(), rir.getLocation());
-                    }
-                    if (rir.getRoomflag()) {
-                        roomnum = queryRooms(rir.getID(), rir.getLocation());
-                        roomprice = queryRoomsPrice(rir.getID(), rir.getLocation());
-                    }
-                    ReserveItineraryResponse rires = new ReserveItineraryResponse(rir.getID(),
-                            rir.getFlightNumbers(), seats, prices, rir.getLocation(), carnum, carprice,
-                            roomnum, roomprice, rir.getCarflag(), rir.getRoomflag(), transactionSuccess);
-                    rires.transactionIDs = (ArrayList<Integer>) rir.transactionIDs.clone();
-                    replyAll(rires);
+                    itinerary((ReserveItineraryRequest) rmsg);
                     break;
                 default:
                     System.out.println("unrecognizable message");
