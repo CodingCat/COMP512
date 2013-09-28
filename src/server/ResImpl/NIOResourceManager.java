@@ -277,8 +277,6 @@ public class NIOResourceManager extends NIOReactor{
                     forward("data", rmsg);
                     break;
                 case DELETE_FLIGHT_REQUEST:
-                    DelFlightRequest dfreq = (DelFlightRequest) rmsg;
-                    deleteFlight(dfreq.getID(), dfreq.getFlightNum());
                     forward("data", rmsg);
                     break;
                 case DELETE_FLIGHT_RESPONSE:
@@ -308,9 +306,7 @@ public class NIOResourceManager extends NIOReactor{
                     forward("data", acreq);
                     break;
                 case DELETE_CAR_REQUEST:
-                    DelCarRequest dcreq = (DelCarRequest) rmsg;
-                    deleteCars(dcreq.getID(), dcreq.getLocation());
-                    forward("data", dcreq);
+                    forward("data", rmsg);
                     break;
                 case DELETE_CAR_RESPONSE:
                     DelCarResponse dcres = (DelCarResponse) rmsg;
