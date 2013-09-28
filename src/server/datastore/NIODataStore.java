@@ -12,6 +12,10 @@ import java.util.Vector;
 
 public class NIODataStore extends NIOReactor {
 
+    private Object flightreservelock = new Object();
+    private Object carreservelock = new Object();
+    private Object roomreservelock = new Object();
+
     protected RMHashtable m_itemHT = new RMHashtable();
 
     public NIODataStore(String listenIp, int listenport) {
@@ -321,6 +325,48 @@ public class NIODataStore extends NIOReactor {
         return false;
     }
 
+    private void reserveFlight(ReserveFlightRequest rfr) {
+        ReserveFlightResponse rfres = null;
+        synchronized (flightreservelock) {
+            boolean successReservedFlight =
+                    reserveFlight(rfr.getID(), rfr.getCustomerid(), rfr.getFlightnumber());
+            int seat = queryFlight(rfr.getID(), rfr.getFlightnumber());
+            int price = queryFlightPrice(rfr.getID(), rfr.getFlightnumber());
+            rfres = new ReserveFlightResponse(rfr.getID(),
+                    rfr.getFlightnumber(), seat, price, successReservedFlight);
+        }
+        rfres.transactionIDs = (ArrayList<Integer>) rfr.transactionIDs.clone();
+        reply(rfres);
+    }
+
+    private void reserveCar(ReserveCarRequest rcr) {
+        ReserveCarResponse rcres = null;
+        synchronized (carreservelock) {
+            boolean success = reserveCar(rcr.getID(), rcr.getCustomerid(),
+                    rcr.getLocation());
+            int carnum = queryCars(rcr.getID(), rcr.getLocation());
+            int carprice = queryCarsPrice(rcr.getID(), rcr.getLocation());
+            rcres = new ReserveCarResponse(rcr.getID(),
+                    rcr.getLocation(), carnum, carprice, success);
+        }
+        rcres.transactionIDs = (ArrayList<Integer>) rcr.transactionIDs.clone();
+        reply(rcres);
+    }
+
+    private void reserveRoom(ReserveRoomRequest rrr) {
+        ReserveRoomResponse rrres = null;
+        synchronized (roomreservelock) {
+            boolean success = reserveRoom(rrr.getID(), rrr.getCustomerid(), rrr.getLocation());
+            int roomnum = queryRooms(rrr.getID(), rrr.getLocation());
+            int roomprice = queryRoomsPrice(rrr.getID(), rrr.getLocation());
+            rrres = new ReserveRoomResponse(rrr.getID(),
+                    rrr.getLocation(), roomnum, roomprice, success);
+        }
+        rrres.transactionIDs = (ArrayList<Integer>) rrr.transactionIDs.clone();
+        reply(rrres);
+    }
+
+
     @Override
     public void dispatch(Message msg) {
         if (msg instanceof ReservationMessage) {
@@ -345,15 +391,7 @@ public class NIODataStore extends NIOReactor {
                     reply(qfres);
                     break;
                 case RESERVE_FLIGHT_REQUEST:
-                    ReserveFlightRequest rfr = (ReserveFlightRequest) rmsg;
-                    reserveFlight(rfr.getID(), rfr.getCustomerid(), rfr.getFlightnumber());
-                    seat = queryFlight(rfr.getID(), rfr.getFlightnumber());
-                    price = queryFlightPrice(rfr.getID(), rfr.getFlightnumber());
-                    boolean success = price >= 0;
-                    ReserveFlightResponse rfres = new ReserveFlightResponse(rfr.getID(),
-                            rfr.getFlightnumber(), seat, price, success);
-                    rfres.transactionIDs = (ArrayList<Integer>) rfr.transactionIDs.clone();
-                    reply(rfres);
+                    reserveFlight((ReserveFlightRequest) rmsg);
                     break;
                 case ADD_CAR_REQUEST:
                     AddCarRequest acreq = (AddCarRequest) rmsg;
@@ -375,15 +413,7 @@ public class NIODataStore extends NIOReactor {
                     reply(qcres);
                     break;
                 case RESERVE_CAR_REQUEST:
-                    ReserveCarRequest rcr = (ReserveCarRequest) rmsg;
-                    reserveCar(rcr.getID(), rcr.getCustomerid(), rcr.getLocation());
-                    carnum = queryCars(rcr.getID(), rcr.getLocation());
-                    carprice = queryCarsPrice(rcr.getID(), rcr.getLocation());
-                    success = carprice >= 0;
-                    ReserveCarResponse rcres = new ReserveCarResponse(rcr.getID(),
-                            rcr.getLocation(), carnum, carprice, success);
-                    rcres.transactionIDs = (ArrayList<Integer>) rcr.transactionIDs.clone();
-                    reply(rcres);
+                    reserveCar((ReserveCarRequest) rmsg);
                     break;
                 case ADD_ROOM_REQUEST:
                     AddRoomRequest arreq = (AddRoomRequest) rmsg;
@@ -404,15 +434,7 @@ public class NIODataStore extends NIOReactor {
                     reply(qrres);
                     break;
                 case RESERVE_ROOM_REQUEST:
-                    ReserveRoomRequest rrr = (ReserveRoomRequest) rmsg;
-                    reserveRoom(rrr.getID(), rrr.getCustomerid(), rrr.getLocation());
-                    roomnum = queryRooms(rrr.getID(), rrr.getLocation());
-                    roomprice = queryRoomsPrice(rrr.getID(), rrr.getLocation());
-                    success = roomprice >= 0;
-                    ReserveRoomResponse rrres = new ReserveRoomResponse(rrr.getID(),
-                            rrr.getLocation(), roomnum, roomprice, success);
-                    rrres.transactionIDs = (ArrayList<Integer>) rrr.transactionIDs.clone();
-                    reply(rrres);
+                    reserveRoom((ReserveRoomRequest) rmsg);
                     break;
                 case ADD_CUSTOMER_REQUEST:
                     AddCustomerRequest acureq = (AddCustomerRequest) rmsg;
