@@ -380,7 +380,7 @@ public class NIODataStore extends NIOReactor {
                     carnum = queryCars(rcr.getID(), rcr.getLocation());
                     carprice = queryCarsPrice(rcr.getID(), rcr.getLocation());
                     success = carprice >= 0;
-                    ReserveRoomResponse rcres = new ReserveRoomResponse(rcr.getID(),
+                    ReserveCarResponse rcres = new ReserveCarResponse(rcr.getID(),
                             rcr.getLocation(), carnum, carprice, success);
                     rcres.transactionIDs = (ArrayList<Integer>) rcr.transactionIDs.clone();
                     reply(rcres);
