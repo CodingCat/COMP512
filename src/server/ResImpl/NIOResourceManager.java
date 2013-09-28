@@ -235,6 +235,38 @@ public class NIOResourceManager extends NIOReactor{
         return queryPrice(id, Hotel.getKey(location));
     }
 
+    private void handleDeleteCustomerResponse(DelCustomerResponse dcr) {
+        for (int i = 0; i < dcr.getFlightnumbers().size(); i++) {
+            addFlight(0, dcr.getFlightnumbers().get(i), dcr.getSeatnumber().get(i),
+                    dcr.getFlightprice().get(i));
+        }
+        for (int i = 0; i < dcr.getCarlocation().size(); i++) {
+            addCars(0, dcr.getCarlocation().get(i), dcr.getCarnum().get(i),
+                    dcr.getCarprice().get(i));
+        }
+        for (int i = 0; i < dcr.getRoomlocation().size(); i++) {
+            addRooms(0, dcr.getRoomlocation().get(i), dcr.getRoomnum().get(i),
+                    dcr.getRoomprice().get(i));
+        }
+    }
+
+    private void handleReserveItineraryResponse(ReserveItineraryResponse rires) {
+        if (rires.isSuccess()) {
+            //flights
+            for (int i = 0; i < rires.getFlightnumbers().size(); i++) {
+                addFlight(rires.getId(),
+                        Integer.parseInt((String) rires.getFlightnumbers().get(i)),
+                        (Integer) rires.getSeatnumber().get(i),
+                        (Integer) rires.getFlightprice().get(i));
+            }
+            //cars
+            if (rires.isCarflag())
+                addCars(rires.getId(), rires.getLocation(), rires.getCarnum(), rires.getCarprice());
+            //room
+            if (rires.isRoomflag())
+                addRooms(rires.getId(), rires.getLocation(), rires.getRoomnum(), rires.getRoomprice());
+        }
+    }
 
     @Override
     public void dispatch(Message msg) {
@@ -248,6 +280,11 @@ public class NIOResourceManager extends NIOReactor{
                     DelFlightRequest dfreq = (DelFlightRequest) rmsg;
                     deleteFlight(dfreq.getID(), dfreq.getFlightNum());
                     forward("data", rmsg);
+                    break;
+                case DELETE_FLIGHT_RESPONSE:
+                    DelFlightResponse dfres = (DelFlightResponse) rmsg;
+                    if (dfres.isSuccess())
+                        deleteFlight(dfres.getID(), dfres.getFlightNum());
                     break;
                 case QUERY_FLIGHT_REQUEST:
                 case QUERY_FLIGHTPRICE_REQUEST:
@@ -275,6 +312,11 @@ public class NIOResourceManager extends NIOReactor{
                     deleteCars(dcreq.getID(), dcreq.getLocation());
                     forward("data", dcreq);
                     break;
+                case DELETE_CAR_RESPONSE:
+                    DelCarResponse dcres = (DelCarResponse) rmsg;
+                    if (dcres.isSuccess())
+                        deleteCars(dcres.getID(), dcres.getLocation());
+                    break;
                 case QUERY_CAR_REQUEST:
                 case QUERY_CARPRICE_REQUEST:
                     QueryCarRequest qcreq = (QueryCarRequest) rmsg;
@@ -295,9 +337,12 @@ public class NIOResourceManager extends NIOReactor{
                     forward("data", rmsg);
                     break;
                 case DELETE_ROOM_REQUEST:
-                    DelRoomRequest drreq = (DelRoomRequest) rmsg;
-                    deleteRooms(drreq.getID(), drreq.getLocation());
                     forward("data", rmsg);
+                    break;
+                case DELETE_ROOM_RESPONSE:
+                    DelRoomResponse drres = (DelRoomResponse) rmsg;
+                    if (drres.isSuccess())
+                        deleteRooms(drres.getID(), drres.getLocation());
                     break;
                 case QUERY_ROOM_REQUEST:
                 case QUERY_ROOMPRICE_REQUEST:
@@ -349,19 +394,7 @@ public class NIOResourceManager extends NIOReactor{
                     reply(rmsg);
                     break;
                 case DELETE_CUSTOMER_RESPONSE:
-                    DelCustomerResponse dcr = (DelCustomerResponse) rmsg;
-                    for (int i = 0; i < dcr.getFlightnumbers().size(); i++) {
-                        addFlight(0, dcr.getFlightnumbers().get(i), dcr.getSeatnumber().get(i),
-                                dcr.getFlightprice().get(i));
-                    }
-                    for (int i = 0; i < dcr.getCarlocation().size(); i++) {
-                        addCars(0, dcr.getCarlocation().get(i), dcr.getCarnum().get(i),
-                                dcr.getCarprice().get(i));
-                    }
-                    for (int i = 0; i < dcr.getRoomlocation().size(); i++) {
-                        addRooms(0, dcr.getRoomlocation().get(i), dcr.getRoomnum().get(i),
-                                dcr.getRoomprice().get(i));
-                    }
+                    handleDeleteCustomerResponse((DelCustomerResponse) rmsg);
                     break;
                 case QUERY_CUSTOMER_RESPONSE:
                     //do not cache bill
@@ -428,22 +461,7 @@ public class NIOResourceManager extends NIOReactor{
                         addRooms(rrr.getID(), rrr.getLocation(), rrr.getRoomnum(), rrr.getRoomprice());
                     break;
                 case RESERVE_ITINERARY_RESPONSE:
-                    ReserveItineraryResponse rires = (ReserveItineraryResponse) rmsg;
-                    if (rires.isSuccess()) {
-                        //flights
-                        for (int i = 0; i < rires.getFlightnumbers().size(); i++) {
-                            addFlight(rires.getId(),
-                                    Integer.parseInt((String) rires.getFlightnumbers().get(i)),
-                                    (Integer) rires.getSeatnumber().get(i),
-                                    (Integer) rires.getFlightprice().get(i));
-                        }
-                        //cars
-                        if (rires.isCarflag())
-                            addCars(rires.getId(), rires.getLocation(), rires.getCarnum(), rires.getCarprice());
-                        //room
-                        if (rires.isRoomflag())
-                            addRooms(rires.getId(), rires.getLocation(), rires.getRoomnum(), rires.getRoomprice());
-                    }
+                    handleReserveItineraryResponse((ReserveItineraryResponse) rmsg);
                     break;
                 default:
                     break;
@@ -452,6 +470,7 @@ public class NIOResourceManager extends NIOReactor{
             e.printStackTrace();
         }
     }
+
 
     public static void main(String [] args) {
         NIOResourceManager rm = new NIOResourceManager(args[0], Integer.parseInt(args[1]), args[2]);

@@ -517,6 +517,27 @@ public class NIODataStore extends NIOReactor {
         replyAll(rires);
     }
 
+    private void deleteFlights(DelFlightRequest dfreq) {
+        boolean status = deleteFlight(dfreq.getID(), dfreq.getFlightNum());
+        DelFlightResponse dfres = new DelFlightResponse(dfreq.getID(), dfreq.getFlightNum(), status);
+        dfres.transactionIDs = (ArrayList<Integer>) dfreq.transactionIDs.clone();
+        reply(dfres);
+    }
+
+    private void deleteCars(DelCarRequest dcreq) {
+        boolean status = deleteCars(dcreq.getID(), dcreq.getLocation());
+        DelCarResponse dfres = new DelCarResponse(dcreq.getID(), dcreq.getLocation(), status);
+        dfres.transactionIDs = (ArrayList<Integer>) dcreq.transactionIDs.clone();
+        reply(dfres);
+    }
+
+    private void deleteRooms(DelRoomRequest drreq) {
+        boolean status = deleteRooms(drreq.getID(), drreq.getLocation());
+        DelRoomResponse drres = new DelRoomResponse(drreq.getID(), drreq.getLocation(), status);
+        drres.transactionIDs = (ArrayList<Integer>) drreq.transactionIDs.clone();
+        reply(drres);
+    }
+
     @Override
     public void dispatch(Message msg) {
         if (msg instanceof ReservationMessage) {
@@ -526,8 +547,7 @@ public class NIODataStore extends NIOReactor {
                     addFlight((AddFlightRequest) rmsg);
                     break;
                 case DELETE_FLIGHT_REQUEST:
-                    DelFlightRequest dfreq = (DelFlightRequest) rmsg;
-                    deleteFlight(dfreq.getID(), dfreq.getFlightNum());
+                    deleteFlights((DelFlightRequest) rmsg);
                     break;
                 case QUERY_FLIGHT_REQUEST:
                 case QUERY_FLIGHTPRICE_REQUEST:
@@ -540,8 +560,7 @@ public class NIODataStore extends NIOReactor {
                     addCar((AddCarRequest) rmsg);
                     break;
                 case DELETE_CAR_REQUEST:
-                    DelCarRequest dcreq = (DelCarRequest) rmsg;
-                    deleteCars(dcreq.getID(), dcreq.getLocation());
+                    deleteCars((DelCarRequest) rmsg);
                     break;
                 case QUERY_CAR_REQUEST:
                 case QUERY_CARPRICE_REQUEST:
@@ -554,8 +573,7 @@ public class NIODataStore extends NIOReactor {
                     addRoom((AddRoomRequest) rmsg);
                     break;
                 case DELETE_ROOM_REQUEST:
-                    DelRoomRequest drreq = (DelRoomRequest) rmsg;
-                    deleteRooms(drreq.getID(), drreq.getLocation());
+                    deleteRooms((DelRoomRequest) rmsg);
                     break;
                 case QUERY_ROOM_REQUEST:
                 case QUERY_ROOMPRICE_REQUEST:
