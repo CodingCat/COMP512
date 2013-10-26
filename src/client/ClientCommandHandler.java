@@ -56,14 +56,14 @@ public class ClientCommandHandler extends NIOClient {
                 "Usage:\treserveflight,<id>,<customerid>,<flightnumber>");
         supportCommands.put("reservecar", "Reserving a Car.\nPurpose:\nReserve a given number of cars " +
                 "for a customer at a particular location.\n" +
-                "Usage:\treservecar,<id>,<customerid>,<location>,<numberofCars>");
+                "Usage:\treservecar,<id>,<customerid>,<location>");
         supportCommands.put("reserveroom", "Reserving a Room.\nPurpose:\nReserve a given number of rooms" +
                 " for a customer at a particular location.\n" +
-                "Usage:\treserveroom, <id>, <customerid>, <location>, <numberofRooms>");
+                "Usage:\treserveroom, <id>, <customerid>, <location>");
         supportCommands.put("itinerary", "Reserving an Itinerary\nPurpose:\nBook one or more flights. " +
                 "Also book zero or more cars/rooms at a location.\n" +
                 "Usage:\titinerary,<id>,<customerid>,<flightnumber1>....<flightnumberN>," +
-                "<LocationToBookCarsOrRooms>,<NumberOfCars>,<NumberOfRoom>");
+                "<LocationToBookCarsOrRooms>,<FlagOfCars>,<FlagOfRoom>");
         supportCommands.put("quit", "Quitting Client.\nPurpose:\nExit the Client\nUsage:\tquit");
         supportCommands.put("newcustomerid", "Creating new customer providing an id\tPurpose:\nCreates a " +
                 " new customer with the id provided\tUsage:\tnewcustomerid, <id>, <customerid>");
@@ -352,7 +352,7 @@ public class ClientCommandHandler extends NIOClient {
     }
 
     public void reservecar(Vector<String> arguments) {
-        if(arguments.size()!=4){
+        if(arguments.size() != 4){
             System.out.println("Wrong Argument List");
             System.out.println(supportCommands.get("reservecar"));
             return;
