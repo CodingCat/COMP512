@@ -7,12 +7,48 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TransGenericResourceManager extends GenericResourceManager {
     class Tuple3 {
         String key;
-        int operation;    // 0 - read, 1 - write
+        int operation;    // 0 - read, 1 - write, 2 - delete
         RMItem newvalue;
+        Tuple3(String k, int op, RMItem nv) {
+            key = k;
+            operation = op;
+            newvalue = nv;
+        }
     }
 
     private ConcurrentHashMap<Integer, ArrayList<Tuple3>> operationList =
             new ConcurrentHashMap<Integer, ArrayList<Tuple3>>();//transaction_id -> tuple2 list
+
+    private void checkOperationQueue(int id) {
+        if (!operationList.contains(id)) {
+            operationList.put(id, new ArrayList<Tuple3>());
+        }
+    }
+
+    public RMItem readDatafromRM( int id, String key ) {
+        //push to the queue
+        RMItem it = super.readDatafromRM(id, key);
+        checkOperationQueue(id);
+        operationList.get(id).add(new Tuple3(key, 0, it));
+        return it;
+    }
+
+    // Writes a data item
+    public void writeData( int id, String key, RMItem value ) {
+        checkOperationQueue(id);
+        operationList.get(id).add(new Tuple3(key, 1, value));
+    }
+
+    // Remove the item out of storage
+    protected RMItem removeData(int id, String key) {
+        checkOperationQueue(id);
+        operationList.get(id).add(new Tuple3(key, 2, null));
+        return super.readDatafromRM(id, key);
+    }
+
+
+
+
 
     public boolean abort(int transid) {
         if (operationList.containsKey(transid)) {
@@ -31,7 +67,11 @@ public class TransGenericResourceManager extends GenericResourceManager {
                     if (super.readDatafromRM(transId, t3.key) == null)
                         return false;
                 } else {
-                    super.writeData(transId, t3.key, t3.newvalue);
+                    if (t3.operation == 1)
+                        super.writeData(transId, t3.key, t3.newvalue);
+                    else {
+                        if (t3.operation == 2) super.deleteItem(transId, t3.key);
+                    }
                 }
             }
             return true;
