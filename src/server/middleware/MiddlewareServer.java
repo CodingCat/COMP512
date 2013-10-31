@@ -502,7 +502,7 @@ public class MiddlewareServer implements ResourceManager {
         port = Integer.parseInt(args[0]);
         for(int i=0;i<args.length-1;i++)//for (String a : args) 
         {
-        	switch(args[i])
+        	/*switch(args[i])
         	{
 	        	case "flight":
 	        		flightServer = args[i+1];
@@ -516,7 +516,7 @@ public class MiddlewareServer implements ResourceManager {
 	        		hotelServer = args[i+1];
 	        		obj.m_RMState.put(args[i], true);
 	        		break;
-        	}
+        	} */
         }
         //Check for remote objects of RMs. Acts as Client to RMs.
         try 

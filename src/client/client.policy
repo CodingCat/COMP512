@@ -1,4 +1,4 @@
-grant codeBase "file:/home/2013/nsingh22/Distributed_Project/gitDir/src/client/" {
+grant codeBase "file:/home/zhunan/code/COMP512/src/" {
     permission java.security.AllPermission;
 };
 
