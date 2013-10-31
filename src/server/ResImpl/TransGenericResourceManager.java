@@ -2,7 +2,7 @@ package server.ResImpl;
 
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class TransGenericResourceManager extends GenericResourceManager {
     class Tuple3 {
@@ -11,8 +11,8 @@ public class TransGenericResourceManager extends GenericResourceManager {
         RMItem newvalue;
     }
 
-    private HashMap<Integer, ArrayList<Tuple3>> operationList =
-            new HashMap<Integer, ArrayList<Tuple3>>();//transaction_id -> tuple2 list
+    private ConcurrentHashMap<Integer, ArrayList<Tuple3>> operationList =
+            new ConcurrentHashMap<Integer, ArrayList<Tuple3>>();//transaction_id -> tuple2 list
 
     public boolean abort(int transid) {
         if (operationList.containsKey(transid)) {
