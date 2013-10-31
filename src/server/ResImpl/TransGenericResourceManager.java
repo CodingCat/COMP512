@@ -1,13 +1,14 @@
 package server.ResImpl;
 
 
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TransGenericResourceManager extends GenericResourceManager {
     class Tuple3 {
         String key;
-        int operation;    // 0 - read, 1 - write, 2 - delete
+        int operation;    // 0 - read, 1 - write, 2 - delete, 3- reserve
         RMItem newvalue;
         Tuple3(String k, int op, RMItem nv) {
             key = k;
@@ -47,6 +48,14 @@ public class TransGenericResourceManager extends GenericResourceManager {
     }
 
 
+    public synchronized boolean reserveItem(int id, String key)
+            throws RemoteException
+    {
+        checkOperationQueue(id);
+        operationList.get(id).add(new Tuple3(key, 3, null));
+        return true;
+    }
+
 
 
 
@@ -60,22 +69,28 @@ public class TransGenericResourceManager extends GenericResourceManager {
     }
 
     public boolean commit(int transId) {
-        if (operationList.containsKey(transId)) {
-            //realize the operations
-            for (Tuple3 t3 : operationList.get(transId)) {
-                if (t3.operation == 0) {
-                    if (super.readDatafromRM(transId, t3.key) == null)
-                        return false;
-                } else {
-                    if (t3.operation == 1)
-                        super.writeData(transId, t3.key, t3.newvalue);
-                    else {
-                        if (t3.operation == 2) super.deleteItem(transId, t3.key);
+        try {
+            if (operationList.containsKey(transId)) {
+                //realize the operations
+                for (Tuple3 t3 : operationList.get(transId)) {
+                    if (t3.operation == 0) {
+                        if (super.readDatafromRM(transId, t3.key) == null)
+                            return false;
+                    } else {
+                        if (t3.operation == 1)
+                            super.writeData(transId, t3.key, t3.newvalue);
+                        else {
+                            if (t3.operation == 2) super.deleteItem(transId, t3.key);
+                            if (t3.operation == 3) super.reserveItem(transId, t3.key);
+                        }
                     }
                 }
+                return true;
             }
-            return true;
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
-        return false;
     }
 }

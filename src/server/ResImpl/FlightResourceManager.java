@@ -4,13 +4,13 @@
 package server.ResImpl;
 
 
+import server.ResInterface.FlightInterface;
+
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-
-import server.ResInterface.FlightInterface;
 
 public class FlightResourceManager extends GenericResourceManager implements FlightInterface {
 
@@ -29,6 +29,7 @@ public class FlightResourceManager extends GenericResourceManager implements Fli
     {
     	return deleteReservationfromRM(id, key, reservedItemCount);
     }
+
 	@Override
 	public synchronized boolean addFlight(int id, int flightNum, int flightSeats,
 			int flightPrice) throws RemoteException 
