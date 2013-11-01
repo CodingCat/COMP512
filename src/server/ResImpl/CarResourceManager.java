@@ -3,26 +3,22 @@
  */
 package server.ResImpl;
 
+import server.ResInterface.CarInterface;
+
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import server.ResInterface.CarInterface;
-
-public class CarResourceManager extends GenericResourceManager implements CarInterface
+public class CarResourceManager extends TransGenericResourceManager implements CarInterface
 {
 	public RMItem readData( int id, String key )
     {
 		return readDatafromRM(id, key);
     }
 
-    // Writes a data item
-    /*public void writeData( int id, String key, RMItem value )
-    {
-    	super.writeData(id, key, value);
-    }*/
+
     public boolean deleteReservation(int id,String key,int reservedItemCount)
     {
     	return deleteReservationfromRM(id, key, reservedItemCount);

@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TransGenericResourceManager extends GenericResourceManager {
     class Tuple3 {
         String key;
-        int operation;    // 0 - read, 1 - write, 2 - delete, 3- reserve
+        int operation;    // 0 - read, 1 - write, 2 - delete, 3- reserve, 4 - delete reservation
         RMItem newvalue;
         Tuple3(String k, int op, RMItem nv) {
             key = k;
@@ -88,8 +88,7 @@ public class TransGenericResourceManager extends GenericResourceManager {
 
     // deletes the entire item
     @Override
-    protected boolean deleteItem(int id, String key)
-    {
+    protected boolean deleteItem(int id, String key) {
         Trace.info("RM::deleteItem(" + id + ", " + key + ") called" );
         ReservableItem curObj = (ReservableItem) readDatafromRM( id, key );
         // Check if there is such an item in the storage
@@ -111,6 +110,21 @@ public class TransGenericResourceManager extends GenericResourceManager {
                 return false;
             }
         } // if
+    }
+
+    private void deleteReservation(ReservableItem item) {
+        int r = item.getReserved();
+        item.setReserved(item.getReserved() + r);
+        item.setCount(item.getCount() + r);
+    }
+
+    @Override
+    public boolean deleteReservationfromRM(int id, String key, int reservedItemCount) {
+        ReservableItem item;
+        item = (ReservableItem) readDatafromRM(id, key);
+        checkOperationQueue(id);
+        operationList.get(key).add(new Tuple3(key, 4, item));
+        return true;
     }
 
 
@@ -137,6 +151,7 @@ public class TransGenericResourceManager extends GenericResourceManager {
                         else {
                             if (t3.operation == 2) super.removeData(transId, t3.key);
                             if (t3.operation == 3) super.reserveItem(transId, t3.key);
+                            if (t3.operation == 4) deleteReservation((ReservableItem) t3.newvalue);
                         }
                     }
                 }
