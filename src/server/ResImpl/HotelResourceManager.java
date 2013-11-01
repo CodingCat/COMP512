@@ -3,15 +3,15 @@
  */
 package server.ResImpl;
 
+import server.ResInterface.HotelInterface;
+
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import server.ResInterface.HotelInterface;
-
-public class HotelResourceManager extends GenericResourceManager implements HotelInterface
+public class HotelResourceManager extends TransGenericResourceManager implements HotelInterface
 {
 
 	public RMItem readData( int id, String key )
@@ -19,34 +19,32 @@ public class HotelResourceManager extends GenericResourceManager implements Hote
 		return readDatafromRM(id, key);
     }
 
-    // Writes a data item
-    /*public void writeData( int id, String key, RMItem value )
-    {
-    	super.writeData(id, key, value);
-    }*/
     public boolean deleteReservation(int id,String key,int reservedItemCount)
     {
     	return deleteReservationfromRM(id, key, reservedItemCount);
     }
+
 	@Override
 	public synchronized boolean addRooms(int id, String location, int count, int price)
-			throws RemoteException
-	{
+			throws RemoteException {
 		Trace.info("RM::addRooms(" + id + ", " + location + ", " + count + ", $" + price + ") called" );
         Hotel curObj = (Hotel) readData( id, Hotel.getKey(location) );
         if ( curObj == null ) {
             // doesn't exist...add it
             Hotel newObj = new Hotel( location, count, price );
             writeData( id, newObj.getKey(), newObj );
-            Trace.info("RM::addRooms(" + id + ") created new room location " + location + ", count=" + count + ", price=$" + price );
+            Trace.info("RM::addRooms(" + id + ") created new room location " +
+                    location + ", count=" + count + ", price=$" + price );
         } else {
             // add count to existing object and update price...
-            curObj.setCount( curObj.getCount() + count );
+            Hotel newObj = curObj.clone();
+            newObj.setCount( newObj.getCount() + count );
             if ( price > 0 ) {
-                curObj.setPrice( price );
+                newObj.setPrice( price );
             } // if
-            writeData( id, curObj.getKey(), curObj );
-            Trace.info("RM::addRooms(" + id + ") modified existing location " + location + ", count=" + curObj.getCount() + ", price=$" + price );
+            writeData( id, newObj.getKey(), newObj );
+            Trace.info("RM::addRooms(" + id + ") modified existing location " +
+                    location + ", count=" + newObj.getCount() + ", price=$" + price );
         } // else
         return true;
 	}
