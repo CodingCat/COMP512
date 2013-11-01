@@ -57,6 +57,61 @@ public class TransGenericResourceManager extends GenericResourceManager {
     }
 
 
+    // query the number of available seats/rooms/cars
+    @Override
+    protected int queryNum(int id, String key) {
+        Trace.info("SUBMIT TRANSACTION:" +
+                "RM::queryNum(" + id + ", " + key + ") called" );
+        ReservableItem curObj = (ReservableItem) readDatafromRM( id, key);
+        int value = 0;
+        if ( curObj != null ) {
+            value = curObj.getCount();
+        } // else
+        Trace.info("SUBMIT TRANSACTION:" +
+                "RM::queryNum(" + id + ", " + key + ") returns count=" + value);
+        return value;
+    }
+
+    // query the price of an item
+    @Override
+    protected int queryPrice(int id, String key) {
+        Trace.info("RM::queryPrice(" + id + ", " + key + ") called" );
+        ReservableItem curObj = (ReservableItem) readDatafromRM( id, key);
+        int value = 0;
+        if ( curObj != null ) {
+            value = curObj.getPrice();
+        } // else
+        Trace.info("RM::queryPrice(" + id + ", " + key + ") returns cost=$" + value );
+        return value;
+    }
+
+
+    // deletes the entire item
+    @Override
+    protected boolean deleteItem(int id, String key)
+    {
+        Trace.info("RM::deleteItem(" + id + ", " + key + ") called" );
+        ReservableItem curObj = (ReservableItem) readDatafromRM( id, key );
+        // Check if there is such an item in the storage
+        if ( curObj == null ) {
+            Trace.warn("SUBMIT TRANSACTION: " +
+                    "RM::deleteItem(" + id + ", " + key + ") failed--item doesn't exist" );
+            return false;
+        } else {
+            if (curObj.getReserved()==0) {
+                removeData(id, curObj.getKey());
+                Trace.info("SUBMIT TRANSACTION:" +
+                        "RM::deleteItem(" + id + ", " + key + ") item deleted" );
+                return true;
+            }
+            else {
+                Trace.info("SUBMIT TRANSACTION:" +
+                        "RM::deleteItem(" + id + ", " + key + ") item can't be deleted " +
+                        "because some customers reserved it" );
+                return false;
+            }
+        } // if
+    }
 
 
     public boolean abort(int transid) {
@@ -80,7 +135,7 @@ public class TransGenericResourceManager extends GenericResourceManager {
                         if (t3.operation == 1)
                             super.writeData(transId, t3.key, t3.newvalue);
                         else {
-                            if (t3.operation == 2) super.deleteItem(transId, t3.key);
+                            if (t3.operation == 2) super.removeData(transId, t3.key);
                             if (t3.operation == 3) super.reserveItem(transId, t3.key);
                         }
                     }
