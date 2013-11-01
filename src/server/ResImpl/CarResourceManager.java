@@ -34,15 +34,18 @@ public class CarResourceManager extends TransGenericResourceManager implements C
             // car location doesn't exist...add it
             Car newObj = new Car( location, count, price );
             writeData( id, newObj.getKey(), newObj );
-            Trace.info("RM::addCars(" + id + ") created new location " + location + ", count=" + count + ", price=$" + price );
+            Trace.info("RM::addCars(" + id + ") created new location " + location +
+                    ", count=" + count + ", price=$" + price );
         } else {
             // add count to existing car location and update price...
-            curObj.setCount( curObj.getCount() + count );
+            Car newObj = curObj.clone();
+            newObj.setCount( curObj.getCount() + count );
             if ( price > 0 ) {
-                curObj.setPrice( price );
+                newObj.setPrice( price );
             } // if
-            writeData( id, curObj.getKey(), curObj );
-            Trace.info("RM::addCars(" + id + ") modified existing location " + location + ", count=" + curObj.getCount() + ", price=$" + price );
+            writeData( id, newObj.getKey(), newObj );
+            Trace.info("RM::addCars(" + id + ") modified existing location " +
+                    location + ", count=" + newObj.getCount() + ", price=$" + price );
         } // else
         return(true);
 	}
