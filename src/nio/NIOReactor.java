@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * the class representing the reactor in NIO model,
@@ -26,7 +28,8 @@ public abstract class NIOReactor implements Runnable {
     private HashMap<String, SocketChannel> channelMap = null;  //for client use
     private HashMap<SocketChannel, ArrayList<ByteBuffer>> forwardBuffer = null;//for client use
     private HashMap<String, XmlParser.Tuple2<String, Integer>> serversList = null;
-
+    private ExecutorService handleMessageExecutor = Executors.newFixedThreadPool(
+            Runtime.getRuntime().availableProcessors() * 2);
 
     public NIOReactor(String hostIP, int port) {
         try {
@@ -79,8 +82,10 @@ public abstract class NIOReactor implements Runnable {
     private void replyInternal(SelectionKey key) {
         SocketChannel channel = (SocketChannel) key.channel();
         ArrayList<ByteBuffer> bytebufferlist = clientWriteBuffer.get(channel);
-        sendOutBuffer(bytebufferlist, channel);
-        key.interestOps(SelectionKey.OP_READ);
+        synchronized (this) {
+            sendOutBuffer(bytebufferlist, channel);
+            key.interestOps(SelectionKey.OP_READ);
+        }
     }
 
     /**
@@ -113,9 +118,11 @@ public abstract class NIOReactor implements Runnable {
         System.out.println("forward message to the channel");
         SocketChannel socket = (SocketChannel) key.channel();
         ArrayList<ByteBuffer> bytebufferlist = forwardBuffer.get(socket);
-        sendOutBuffer(bytebufferlist, socket);
-        if (bytebufferlist.isEmpty())
-            key.interestOps(SelectionKey.OP_READ);
+        synchronized (this) {
+            sendOutBuffer(bytebufferlist, socket);
+            if (bytebufferlist.isEmpty())
+                key.interestOps(SelectionKey.OP_READ);
+        }
     }
 
     private void sendOutBuffer(ArrayList<ByteBuffer> buffer, SocketChannel socket) {
@@ -256,10 +263,26 @@ public abstract class NIOReactor implements Runnable {
                             accept(selectkey);
                         } else {
                             if (selectkey.isReadable()) {
-                               dispatch(read(selectkey));
+                                final Message inMsg = read(selectkey);
+                                handleMessageExecutor.execute(
+                                        new MessageHandler(selectkey) {
+                                            @Override
+                                            public void run() {
+                                                dispatch(inMsg);
+                                            }
+                                        }
+                                );
                             } else {
                                 if (selectkey.isWritable()) {
-                                    replyInternal(selectkey);
+                                    handleMessageExecutor.execute(
+                                            new MessageHandler(selectkey) {
+                                                @Override
+                                                public void run() {
+                                                    replyInternal(socketkey);
+                                                }
+                                            }
+                                    );
+
                                 }
                             }
                         }
@@ -284,12 +307,21 @@ public abstract class NIOReactor implements Runnable {
                         //accept the connection
                         SelectionKey selectkey = (SelectionKey) aSelected;
                         if (selectkey.isConnectable()) {
-                            finishConnection(selectkey);
+                                finishConnection(selectkey);
                         } else {
                             if (selectkey.isWritable()) {
                                 forwardInternal(selectkey);
                             } else {
-                                dispatch(read(selectkey));
+                                //readable
+                                final Message inMsg = read(selectkey);
+                                handleMessageExecutor.execute(
+                                        new MessageHandler(selectkey) {
+                                            @Override
+                                            public void run() {
+                                                dispatch(inMsg);
+                                            }
+                                        }
+                                );
                             }
                         }
                     }

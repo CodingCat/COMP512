@@ -3,26 +3,22 @@
  */
 package server.ResImpl;
 
+import server.ResInterface.CarInterface;
+
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import server.ResInterface.CarInterface;
-
-public class CarResourceManager extends GenericResourceManager implements CarInterface
+public class CarResourceManager extends TransGenericResourceManager implements CarInterface
 {
 	public RMItem readData( int id, String key )
     {
 		return readDatafromRM(id, key);
     }
 
-    // Writes a data item
-    /*public void writeData( int id, String key, RMItem value )
-    {
-    	super.writeData(id, key, value);
-    }*/
+
     public boolean deleteReservation(int id,String key,int reservedItemCount)
     {
     	return deleteReservationfromRM(id, key, reservedItemCount);
@@ -38,15 +34,18 @@ public class CarResourceManager extends GenericResourceManager implements CarInt
             // car location doesn't exist...add it
             Car newObj = new Car( location, count, price );
             writeData( id, newObj.getKey(), newObj );
-            Trace.info("RM::addCars(" + id + ") created new location " + location + ", count=" + count + ", price=$" + price );
+            Trace.info("RM::addCars(" + id + ") created new location " + location +
+                    ", count=" + count + ", price=$" + price );
         } else {
             // add count to existing car location and update price...
-            curObj.setCount( curObj.getCount() + count );
+            Car newObj = curObj.clone();
+            newObj.setCount( curObj.getCount() + count );
             if ( price > 0 ) {
-                curObj.setPrice( price );
+                newObj.setPrice( price );
             } // if
-            writeData( id, curObj.getKey(), curObj );
-            Trace.info("RM::addCars(" + id + ") modified existing location " + location + ", count=" + curObj.getCount() + ", price=$" + price );
+            writeData( id, newObj.getKey(), newObj );
+            Trace.info("RM::addCars(" + id + ") modified existing location " +
+                    location + ", count=" + newObj.getCount() + ", price=$" + price );
         } // else
         return(true);
 	}

@@ -34,7 +34,7 @@ public class NIOClientMain {
         if (arguments.size() > 0) {
             String commandName = arguments.get(0);
             //reflect to the function in ClientCommandHandler
-            System.out.println("commandName:" + commandName);
+            System.out.println("user input commandName:" + commandName);
             try {
                 Method method = cmdhandler.getClass().getMethod(
                             commandName.toLowerCase(), arguments.getClass());

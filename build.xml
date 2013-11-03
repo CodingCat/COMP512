@@ -122,21 +122,75 @@
   
   <target name="init.artifacts">
     <property name="artifacts.temp.dir" value="${basedir}/__artifacts_temp"/>
+    <property name="artifact.output.carresourcemanager" value="${basedir}/out"/>
+    <property name="artifact.output.client" value="${basedir}/out"/>
+    <property name="artifact.output.flightresourcemanager" value="${basedir}/out"/>
+    <property name="artifact.output.hotelresourcemanager" value="${basedir}/out"/>
+    <property name="artifact.output.middleware" value="${basedir}/out"/>
     <property name="artifact.output.production_client" value="${basedir}/out"/>
     <property name="artifact.output.production_data" value="${basedir}/out"/>
     <property name="artifact.output.production_middleware" value="${basedir}/out"/>
     <property name="artifact.output.production_rm" value="${basedir}/out"/>
-    <property name="artifact.output.test_client" value="${basedir}/out"/>
-    <property name="artifact.output.test_server" value="${basedir}/out"/>
-    <property name="artifact.output.test_serverclient" value="${basedir}/out"/>
     <mkdir dir="${artifacts.temp.dir}"/>
+    <property name="temp.jar.path.carresourcemanager.jar" value="${artifacts.temp.dir}/carresourcemanager.jar"/>
+    <property name="temp.jar.path.client.jar" value="${artifacts.temp.dir}/client.jar"/>
+    <property name="temp.jar.path.flightresourcemanager.jar" value="${artifacts.temp.dir}/flightresourcemanager.jar"/>
+    <property name="temp.jar.path.hotelresourcemanager.jar" value="${artifacts.temp.dir}/hotelresourcemanager.jar"/>
+    <property name="temp.jar.path.middleware.jar" value="${artifacts.temp.dir}/middleware.jar"/>
     <property name="temp.jar.path.production_client.jar" value="${artifacts.temp.dir}/production_client.jar"/>
     <property name="temp.jar.path.production_data.jar" value="${artifacts.temp.dir}/production_data.jar"/>
     <property name="temp.jar.path.production_middleware.jar" value="${artifacts.temp.dir}/production_middleware.jar"/>
     <property name="temp.jar.path.production_rm.jar" value="${artifacts.temp.dir}/production_rm.jar"/>
-    <property name="temp.jar.path.test_client.jar" value="${artifacts.temp.dir}/test_client.jar"/>
-    <property name="temp.jar.path.test_server.jar" value="${artifacts.temp.dir}/test_server.jar"/>
-    <property name="temp.jar.path.test_serverclient.jar" value="${artifacts.temp.dir}/test_serverclient.jar"/>
+  </target>
+  
+  <target name="artifact.carresourcemanager" depends="init.artifacts, compile.module.comp512" description="Build &#39;carresourcemanager&#39; artifact">
+    <property name="artifact.temp.output.carresourcemanager" value="${artifacts.temp.dir}/carresourcemanager"/>
+    <mkdir dir="${artifact.temp.output.carresourcemanager}"/>
+    <jar destfile="${temp.jar.path.carresourcemanager.jar}" duplicate="preserve" filesetmanifest="mergewithoutmain">
+      <zipfileset file="${basedir}/META-INF/carresourcemanager/META-INF/MANIFEST.MF" prefix="META-INF"/>
+      <zipfileset dir="${comp512.output.dir}"/>
+    </jar>
+    <copy file="${temp.jar.path.carresourcemanager.jar}" tofile="${artifact.temp.output.carresourcemanager}/carresourcemanager.jar"/>
+  </target>
+  
+  <target name="artifact.client" depends="init.artifacts, compile.module.comp512" description="Build &#39;client&#39; artifact">
+    <property name="artifact.temp.output.client" value="${artifacts.temp.dir}/client"/>
+    <mkdir dir="${artifact.temp.output.client}"/>
+    <jar destfile="${temp.jar.path.client.jar}" duplicate="preserve" filesetmanifest="mergewithoutmain">
+      <zipfileset dir="${comp512.output.dir}"/>
+      <zipfileset file="${basedir}/META-INF/client/META-INF/MANIFEST.MF" prefix="META-INF"/>
+    </jar>
+    <copy file="${temp.jar.path.client.jar}" tofile="${artifact.temp.output.client}/client.jar"/>
+  </target>
+  
+  <target name="artifact.flightresourcemanager" depends="init.artifacts, compile.module.comp512" description="Build &#39;flightresourcemanager&#39; artifact">
+    <property name="artifact.temp.output.flightresourcemanager" value="${artifacts.temp.dir}/flightresourcemanager"/>
+    <mkdir dir="${artifact.temp.output.flightresourcemanager}"/>
+    <jar destfile="${temp.jar.path.flightresourcemanager.jar}" duplicate="preserve" filesetmanifest="mergewithoutmain">
+      <zipfileset dir="${comp512.output.dir}"/>
+      <zipfileset file="${basedir}/META-INF/flightresourcemanager/META-INF/MANIFEST.MF" prefix="META-INF"/>
+    </jar>
+    <copy file="${temp.jar.path.flightresourcemanager.jar}" tofile="${artifact.temp.output.flightresourcemanager}/flightresourcemanager.jar"/>
+  </target>
+  
+  <target name="artifact.hotelresourcemanager" depends="init.artifacts, compile.module.comp512" description="Build &#39;hotelresourcemanager&#39; artifact">
+    <property name="artifact.temp.output.hotelresourcemanager" value="${artifacts.temp.dir}/hotelresourcemanager"/>
+    <mkdir dir="${artifact.temp.output.hotelresourcemanager}"/>
+    <jar destfile="${temp.jar.path.hotelresourcemanager.jar}" duplicate="preserve" filesetmanifest="mergewithoutmain">
+      <zipfileset dir="${comp512.output.dir}"/>
+      <zipfileset file="${basedir}/META-INF/hotelresourcemanager/META-INF/MANIFEST.MF" prefix="META-INF"/>
+    </jar>
+    <copy file="${temp.jar.path.hotelresourcemanager.jar}" tofile="${artifact.temp.output.hotelresourcemanager}/hotelresourcemanager.jar"/>
+  </target>
+  
+  <target name="artifact.middleware" depends="init.artifacts, compile.module.comp512" description="Build &#39;middleware&#39; artifact">
+    <property name="artifact.temp.output.middleware" value="${artifacts.temp.dir}/middleware"/>
+    <mkdir dir="${artifact.temp.output.middleware}"/>
+    <jar destfile="${temp.jar.path.middleware.jar}" duplicate="preserve" filesetmanifest="mergewithoutmain">
+      <zipfileset dir="${comp512.output.dir}"/>
+      <zipfileset file="${basedir}/META-INF/middleware/META-INF/MANIFEST.MF" prefix="META-INF"/>
+    </jar>
+    <copy file="${temp.jar.path.middleware.jar}" tofile="${artifact.temp.output.middleware}/middleware.jar"/>
   </target>
   
   <target name="artifact.production_client" depends="init.artifacts, compile.module.comp512" description="Build &#39;production_client&#39; artifact">
@@ -179,40 +233,27 @@
     <copy file="${temp.jar.path.production_rm.jar}" tofile="${artifact.temp.output.production_rm}/production_rm.jar"/>
   </target>
   
-  <target name="artifact.test_client" depends="init.artifacts, compile.module.comp512, compile.module.test" description="Build &#39;test_client&#39; artifact">
-    <property name="artifact.temp.output.test_client" value="${artifacts.temp.dir}/test_client"/>
-    <mkdir dir="${artifact.temp.output.test_client}"/>
-    <jar destfile="${temp.jar.path.test_client.jar}" duplicate="preserve" filesetmanifest="mergewithoutmain">
-      <zipfileset dir="${comp512.output.dir}"/>
-      <zipfileset dir="${test.output.dir}"/>
-      <zipfileset file="${basedir}/META-INF/test_client/META-INF/MANIFEST.MF" prefix="META-INF"/>
-    </jar>
-    <copy file="${temp.jar.path.test_client.jar}" tofile="${artifact.temp.output.test_client}/test_client.jar"/>
-  </target>
-  
-  <target name="artifact.test_server" depends="init.artifacts, compile.module.comp512, compile.module.test" description="Build &#39;test_server&#39; artifact">
-    <property name="artifact.temp.output.test_server" value="${artifacts.temp.dir}/test_server"/>
-    <mkdir dir="${artifact.temp.output.test_server}"/>
-    <jar destfile="${temp.jar.path.test_server.jar}" duplicate="preserve" filesetmanifest="mergewithoutmain">
-      <zipfileset dir="${comp512.output.dir}"/>
-      <zipfileset dir="${test.output.dir}"/>
-      <zipfileset file="${basedir}/META-INF/test_server/META-INF/MANIFEST.MF" prefix="META-INF"/>
-    </jar>
-    <copy file="${temp.jar.path.test_server.jar}" tofile="${artifact.temp.output.test_server}/test_server.jar"/>
-  </target>
-  
-  <target name="artifact.test_serverclient" depends="init.artifacts, compile.module.comp512, compile.module.test" description="Build &#39;test_serverclient&#39; artifact">
-    <property name="artifact.temp.output.test_serverclient" value="${artifacts.temp.dir}/test_serverclient"/>
-    <mkdir dir="${artifact.temp.output.test_serverclient}"/>
-    <jar destfile="${temp.jar.path.test_serverclient.jar}" duplicate="preserve" filesetmanifest="mergewithoutmain">
-      <zipfileset file="${basedir}/META-INF/test_server_client/META-INF/MANIFEST.MF" prefix="META-INF"/>
-      <zipfileset dir="${comp512.output.dir}"/>
-      <zipfileset dir="${test.output.dir}"/>
-    </jar>
-    <copy file="${temp.jar.path.test_serverclient.jar}" tofile="${artifact.temp.output.test_serverclient}/test_serverclient.jar"/>
-  </target>
-  
-  <target name="build.all.artifacts" depends="artifact.production_client, artifact.production_data, artifact.production_middleware, artifact.production_rm, artifact.test_client, artifact.test_server, artifact.test_serverclient" description="Build all artifacts">
+  <target name="build.all.artifacts" depends="artifact.carresourcemanager, artifact.client, artifact.flightresourcemanager, artifact.hotelresourcemanager, artifact.middleware, artifact.production_client, artifact.production_data, artifact.production_middleware, artifact.production_rm" description="Build all artifacts">
+    <mkdir dir="${artifact.output.carresourcemanager}"/>
+    <copy todir="${artifact.output.carresourcemanager}">
+      <fileset dir="${artifact.temp.output.carresourcemanager}"/>
+    </copy>
+    <mkdir dir="${artifact.output.client}"/>
+    <copy todir="${artifact.output.client}">
+      <fileset dir="${artifact.temp.output.client}"/>
+    </copy>
+    <mkdir dir="${artifact.output.flightresourcemanager}"/>
+    <copy todir="${artifact.output.flightresourcemanager}">
+      <fileset dir="${artifact.temp.output.flightresourcemanager}"/>
+    </copy>
+    <mkdir dir="${artifact.output.hotelresourcemanager}"/>
+    <copy todir="${artifact.output.hotelresourcemanager}">
+      <fileset dir="${artifact.temp.output.hotelresourcemanager}"/>
+    </copy>
+    <mkdir dir="${artifact.output.middleware}"/>
+    <copy todir="${artifact.output.middleware}">
+      <fileset dir="${artifact.temp.output.middleware}"/>
+    </copy>
     <mkdir dir="${artifact.output.production_client}"/>
     <copy todir="${artifact.output.production_client}">
       <fileset dir="${artifact.temp.output.production_client}"/>
@@ -228,18 +269,6 @@
     <mkdir dir="${artifact.output.production_rm}"/>
     <copy todir="${artifact.output.production_rm}">
       <fileset dir="${artifact.temp.output.production_rm}"/>
-    </copy>
-    <mkdir dir="${artifact.output.test_client}"/>
-    <copy todir="${artifact.output.test_client}">
-      <fileset dir="${artifact.temp.output.test_client}"/>
-    </copy>
-    <mkdir dir="${artifact.output.test_server}"/>
-    <copy todir="${artifact.output.test_server}">
-      <fileset dir="${artifact.temp.output.test_server}"/>
-    </copy>
-    <mkdir dir="${artifact.output.test_serverclient}"/>
-    <copy todir="${artifact.output.test_serverclient}">
-      <fileset dir="${artifact.temp.output.test_serverclient}"/>
     </copy>
     
     <!-- Delete temporary files -->
