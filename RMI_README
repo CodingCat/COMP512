@@ -49,21 +49,35 @@ Instructions
 * Replace <the_path> with the absolute path to ~
 
 6.Start FlightRM:
-java -Djava.security.poly=server/server.policy -Djava.rmi.server.codebase=file:/home/2013/nsingh22/Distributed_Project/gitDir/src/server/ server.ResImpl.FlightResourceManager 8228
+java -Djava.security.policy=server/server.policy -Djava.rmi.server.codebase=file:/home/2013/nsingh22/Distributed_Project/gitDir/src/server/ server.ResImpl.FlightResourceManager 8228
+
+********************
+[~/comp512/project/server] java -Djava.security.policy=server.policy -Djava.rmi.server.codebase=file:/home/2013/nsingh22/Distributed_Project/server/ ResImpl.FlightResourceManager 8228
+********************
 
 Start MiddleWare server with:
 java -Djava.security.policy=server/server.policy -Djava.rmi.server.codebase=file:/home/2013/nsingh22/Distributed_Project/gitDir/src/server/ server.middleware.MiddlewareServer 8228 flight teaching
+
+************************
+[~/comp512/project/server]java -Djava.security.policy=server.policy -Djava.rmi.server.codebase=file:/home/2013/nsingh22/Distributed_Project/server/ ResImpl.MiddlewareServer 8228 flight teaching
+************************
 
 
 7. Start the client (on any other machine):
 
 [~] cd ~/comp512/project/client
-[~/comp512/project/client] java -Djava.security.policy=client/client.policy -classpath .:../server client.client teaching 8228
+[~/comp512/project/client] java -Djava.security.policy=client/client.policy -classpath .:./server client.Client teaching 8228
+
+
+**********************************
+[~/comp512/project/client] java -Djava.security.policy=client.policy -classpath .:../server client teaching 8228
+**********************************
 
 
 8. Test it with a command:
 
 > newcar,1,Abc,10,100
+
 
 
 
