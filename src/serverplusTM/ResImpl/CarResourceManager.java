@@ -76,6 +76,18 @@ public class CarResourceManager extends TransGenericResourceManager implements C
         return reserveItem(id,key);
     }
 
+    public boolean shutdown() {
+        return true;
+    }
+
+    public boolean commit(int txid) {
+        return super.commit(txid);
+    }
+
+    public boolean abort(int txid)  {
+        return super.abort(txid);
+    }
+
     /**
      * @param args
      */

@@ -3,8 +3,11 @@
  */
 package serverplusTM.ResImpl;
 
+import serverplusTM.ResInterface.CarInterface;
+import serverplusTM.ResInterface.FlightInterface;
 import serverplusTM.LockManager.InvalidTransactionException;
 import serverplusTM.LockManager.TransactionAbortedException;
+import serverplusTM.ResInterface.HotelInterface;
 import serverplusTM.ResInterface.ResourceManager;
 
 import java.rmi.NotBoundException;
@@ -20,9 +23,9 @@ public class MiddlewareServer implements ResourceManager {
 
 	protected RMHashtable m_customerHT = new RMHashtable();
 	private Map<String,Boolean> m_RMState;
-	static FlightResourceManager rmFlight = null;
-	static CarResourceManager rmCar = null;
-	static HotelResourceManager rmHotel = null;
+	static FlightInterface rmFlight = null;
+	static CarInterface rmCar = null;
+	static HotelInterface rmHotel = null;
 	private TransactionMgr trxnMgr;
 	private int mport;
 	
@@ -668,7 +671,7 @@ public class MiddlewareServer implements ResourceManager {
 		            // get a reference to the rmiregistry
 		            Registry registry = LocateRegistry.getRegistry(flightServer, port);
 		            // get the proxy and the remote reference by rmiregistry lookup
-		            rmFlight = (FlightResourceManager) registry.lookup("Group28FlightRM");
+		            rmFlight = (FlightInterface) registry.lookup("Group28FlightRM");
 		            if(rmFlight!=null)
 		            {
 		                System.out.println("\nConnected to FlightRM\n");
@@ -684,7 +687,7 @@ public class MiddlewareServer implements ResourceManager {
 		            // get a reference to the rmiregistry
 		            Registry registry = LocateRegistry.getRegistry(carServer, port);
 		            // get the proxy and the remote reference by rmiregistry lookup
-		            rmCar = (CarResourceManager) registry.lookup("Group28CarRM");
+		            rmCar = (CarInterface) registry.lookup("Group28CarRM");
 		            if(rmCar!=null)
 		            {
 		                System.out.println("\nConnected to CarRM\n");
@@ -700,7 +703,7 @@ public class MiddlewareServer implements ResourceManager {
 		            // get a reference to the rmiregistry
 		            Registry registry = LocateRegistry.getRegistry(hotelServer, port);
 		            // get the proxy and the remote reference by rmiregistry lookup
-		            rmHotel = (HotelResourceManager) registry.lookup("Group28HotelRM");
+		            rmHotel = (HotelInterface) registry.lookup("Group28HotelRM");
 		            if(rmHotel!=null)
 		            {
 		                System.out.println("\nConnected to HotelRM\n");

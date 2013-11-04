@@ -35,5 +35,7 @@ public interface HotelInterface extends Remote
     /* reserve a room certain at this location */
     public boolean reserveRoom(int id, String key) 
 	throws RemoteException;
-//    public boolean shutdown() throws RemoteException;
+    public boolean shutdown() throws RemoteException;
+    public boolean commit(int txid) throws  RemoteException;
+    public boolean abort(int txid) throws RemoteException;
 }

@@ -43,6 +43,7 @@ public interface FlightInterface extends Remote
     /* Reserve a seat on this flight*/
     public boolean reserveFlight(int id, String key) 
 	throws RemoteException;
-//    public boolean shutdown() throws RemoteException;
-
+    public boolean shutdown() throws RemoteException;
+    public boolean commit(int txid) throws RemoteException;
+    public boolean abort(int txid) throws RemoteException;
 }

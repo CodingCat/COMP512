@@ -36,5 +36,7 @@ public interface CarInterface extends Remote
     /* reserve a car at this location */
     public boolean reserveCar(int id, String key) 
 	throws RemoteException;
-//    public boolean shutdown() throws RemoteException;
+    public boolean shutdown() throws RemoteException;
+    public boolean commit(int txid) throws  RemoteException;
+    public boolean abort(int txid) throws RemoteException;
 }

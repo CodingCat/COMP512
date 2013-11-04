@@ -4,6 +4,9 @@ import serverplusTM.LockManager.DeadlockException;
 import serverplusTM.LockManager.InvalidTransactionException;
 import serverplusTM.LockManager.LockManager;
 import serverplusTM.LockManager.TransactionAbortedException;
+import serverplusTM.ResInterface.CarInterface;
+import serverplusTM.ResInterface.FlightInterface;
+import serverplusTM.ResInterface.HotelInterface;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -21,9 +24,9 @@ public class TransactionMgr
 	private Map<Integer,Boolean> TrxnIDList;//maintains the transactions IDs
 	public static final int READ = LockManager.READ;
     public static final int WRITE = LockManager.WRITE;
-	static FlightResourceManager rmFlight = null;
-	static CarResourceManager rmCar = null;
-	static HotelResourceManager rmHotel = null;
+	static FlightInterface rmFlight = null;
+	static CarInterface rmCar = null;
+	static HotelInterface rmHotel = null;
 	private Map<Integer,ArrayList<String>> TxnRsMgrMap;//maintains the RMs which the trxn is communicating
 	Map<Integer,Long> TxnTimestampMap;//For timeout of trxns
     LockManager lm;

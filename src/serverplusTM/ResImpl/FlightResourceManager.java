@@ -84,6 +84,19 @@ public class FlightResourceManager extends TransGenericResourceManager implement
         return reserveItem(id,key);
     }
 
+    public boolean shutdown() {
+        return true;
+    }
+
+    public boolean commit(int txid) {
+        return super.commit(txid);
+    }
+
+    public boolean abort(int txid)  {
+        return super.abort(txid);
+    }
+
+
     /**
      * @param args
      */
@@ -106,8 +119,8 @@ public class FlightResourceManager extends TransGenericResourceManager implement
             FlightResourceManager obj = new FlightResourceManager();
             obj.m_itemHT = new RMHashtable();
             // dynamically generate the stub (client proxy)
-            server.ResInterface.FlightInterface rm =
-                    (server.ResInterface.FlightInterface) UnicastRemoteObject.exportObject(obj, 0);
+            FlightInterface rm =
+                    (FlightInterface) UnicastRemoteObject.exportObject(obj, 0);
 
             // Bind the remote object's stub in the registry
             Registry registry = LocateRegistry.getRegistry(port);
