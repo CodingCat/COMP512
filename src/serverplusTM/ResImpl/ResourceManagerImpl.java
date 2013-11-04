@@ -2,17 +2,18 @@
 // adapted from Kevin T. Manley
 // CSE 593
 //
-package ResImpl;
+package serverplusTM.ResImpl;
 
 import ResInterface.*;
 
-import java.util.*;
-import java.rmi.*;
-
-import java.rmi.registry.Registry;
-import java.rmi.registry.LocateRegistry;
+import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Calendar;
+import java.util.Enumeration;
+import java.util.Vector;
 
 public class ResourceManagerImpl implements ResourceManager 
 {

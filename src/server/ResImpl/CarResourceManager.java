@@ -11,7 +11,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-public class CarResourceManager extends TransGenericResourceManager implements CarInterface
+public class CarResourceManager extends GenericResourceManager implements CarInterface
 {
 	public RMItem readData( int id, String key )
     {

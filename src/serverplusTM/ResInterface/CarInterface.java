@@ -1,12 +1,12 @@
 /*
  * Author: Navjot Singh
  */
-package ResInterface;
+package serverplusTM.ResInterface;
+
+import serverplusTM.ResImpl.RMItem;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-
-import ResImpl.RMItem;
 
 
 public interface CarInterface extends Remote

@@ -11,7 +11,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-public class HotelResourceManager extends TransGenericResourceManager implements HotelInterface
+public class HotelResourceManager extends GenericResourceManager implements HotelInterface
 {
 
 	public RMItem readData( int id, String key )

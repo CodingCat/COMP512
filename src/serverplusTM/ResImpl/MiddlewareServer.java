@@ -1,26 +1,28 @@
 /*
  * Author: Navjot Singh
  */
-package ResImpl;
+package serverplusTM.ResImpl;
+
+import serverplusTM.LockManager.InvalidTransactionException;
+import serverplusTM.LockManager.TransactionAbortedException;
+import serverplusTM.ResInterface.ResourceManager;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-//import java.util.Vector;
 import java.util.*;
 
-import ResInterface.*;
-import LockManager.*;
+//import java.util.Vector;
 
 public class MiddlewareServer implements ResourceManager {
 
 	protected RMHashtable m_customerHT = new RMHashtable();
 	private Map<String,Boolean> m_RMState;
-	static FlightInterface rmFlight = null;
-	static CarInterface rmCar = null;
-	static HotelInterface rmHotel = null;
+	static FlightResourceManager rmFlight = null;
+	static CarResourceManager rmCar = null;
+	static HotelResourceManager rmHotel = null;
 	private TransactionMgr trxnMgr;
 	private int mport;
 	
@@ -641,23 +643,20 @@ public class MiddlewareServer implements ResourceManager {
         // Initialize frequency table from command line
         port = Integer.parseInt(args[0]);
         obj.mport=port;
-        for(int i=0;i<args.length-1;i++)//for (String a : args) 
+        for(int i=0; i < args.length-1; i++)//for (String a : args)
         {
-        	switch(args[i])
-        	{
-	        	case "flight":
-	        		flightServer = args[i+1];
-	        		obj.m_RMState.put(args[i], true);
-	        		break;
-	        	case "car":
-	        		carServer = args[i+1];
-	        		obj.m_RMState.put(args[i], true);
-	        		break;
-	        	case "hotel":
-	        		hotelServer = args[i+1];
-	        		obj.m_RMState.put(args[i], true);
-	        		break;
-        	}
+        	if (args[i].equals("flight")) {
+                flightServer = args[i+1];
+                obj.m_RMState.put(args[i], true);
+            }
+            if (args[i].equals("car")) {
+                carServer = args[i+1];
+                obj.m_RMState.put(args[i], true);
+            }
+            if (args[i].equals("hotel")) {
+                hotelServer = args[i+1];
+                obj.m_RMState.put(args[i], true);
+            }
         }
         //Check for remote objects of RMs. Acts as Client to RMs.
         try 
@@ -669,11 +668,11 @@ public class MiddlewareServer implements ResourceManager {
 		            // get a reference to the rmiregistry
 		            Registry registry = LocateRegistry.getRegistry(flightServer, port);
 		            // get the proxy and the remote reference by rmiregistry lookup
-		            rmFlight = (FlightInterface) registry.lookup("Group28FlightRM");
+		            rmFlight = (FlightResourceManager) registry.lookup("Group28FlightRM");
 		            if(rmFlight!=null)
 		            {
 		                System.out.println("\nConnected to FlightRM\n");
-		                TransactionMgr.rmFlight=rmFlight;
+		                TransactionMgr.rmFlight = rmFlight;
 		            }
 		            else
 		            {
@@ -685,7 +684,7 @@ public class MiddlewareServer implements ResourceManager {
 		            // get a reference to the rmiregistry
 		            Registry registry = LocateRegistry.getRegistry(carServer, port);
 		            // get the proxy and the remote reference by rmiregistry lookup
-		            rmCar = (CarInterface) registry.lookup("Group28CarRM");
+		            rmCar = (CarResourceManager) registry.lookup("Group28CarRM");
 		            if(rmCar!=null)
 		            {
 		                System.out.println("\nConnected to CarRM\n");
@@ -701,7 +700,7 @@ public class MiddlewareServer implements ResourceManager {
 		            // get a reference to the rmiregistry
 		            Registry registry = LocateRegistry.getRegistry(hotelServer, port);
 		            // get the proxy and the remote reference by rmiregistry lookup
-		            rmHotel = (HotelInterface) registry.lookup("Group28HotelRM");
+		            rmHotel = (HotelResourceManager) registry.lookup("Group28HotelRM");
 		            if(rmHotel!=null)
 		            {
 		                System.out.println("\nConnected to HotelRM\n");

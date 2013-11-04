@@ -1,12 +1,13 @@
-package ResInterface;
+package serverplusTM.ResInterface;
 
+
+import serverplusTM.LockManager.InvalidTransactionException;
+import serverplusTM.LockManager.TransactionAbortedException;
 
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import LockManager.*;
-
-import java.util.*;
+import java.util.Vector;
 /** 
  * Simplified version from CSE 593 Univ. of Washington
  *

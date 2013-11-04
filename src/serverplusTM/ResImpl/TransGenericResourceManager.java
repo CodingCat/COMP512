@@ -1,5 +1,4 @@
-package server.ResImpl;
-
+package serverplusTM.ResImpl;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -61,7 +60,7 @@ public class TransGenericResourceManager extends GenericResourceManager {
     @Override
     protected int queryNum(int id, String key) {
         Trace.info("SUBMIT TRANSACTION:" +
-                "RM::queryNum(" + id + ", " + key + ") called" );
+                "RM::queryNum(" + id + ", " + key + ") called");
         ReservableItem curObj = (ReservableItem) readDatafromRM( id, key);
         int value = 0;
         if ( curObj != null ) {
@@ -75,13 +74,13 @@ public class TransGenericResourceManager extends GenericResourceManager {
     // query the price of an item
     @Override
     protected int queryPrice(int id, String key) {
-        Trace.info("RM::queryPrice(" + id + ", " + key + ") called" );
+        Trace.info("RM::queryPrice(" + id + ", " + key + ") called");
         ReservableItem curObj = (ReservableItem) readDatafromRM( id, key);
         int value = 0;
         if ( curObj != null ) {
             value = curObj.getPrice();
         } // else
-        Trace.info("RM::queryPrice(" + id + ", " + key + ") returns cost=$" + value );
+        Trace.info("RM::queryPrice(" + id + ", " + key + ") returns cost=$" + value);
         return value;
     }
 
@@ -89,24 +88,24 @@ public class TransGenericResourceManager extends GenericResourceManager {
     // deletes the entire item
     @Override
     protected boolean deleteItem(int id, String key) {
-        Trace.info("RM::deleteItem(" + id + ", " + key + ") called" );
+        Trace.info("RM::deleteItem(" + id + ", " + key + ") called");
         ReservableItem curObj = (ReservableItem) readDatafromRM( id, key );
         // Check if there is such an item in the storage
         if ( curObj == null ) {
             Trace.warn("SUBMIT TRANSACTION: " +
-                    "RM::deleteItem(" + id + ", " + key + ") failed--item doesn't exist" );
+                    "RM::deleteItem(" + id + ", " + key + ") failed--item doesn't exist");
             return false;
         } else {
             if (curObj.getReserved()==0) {
                 removeData(id, curObj.getKey());
                 Trace.info("SUBMIT TRANSACTION:" +
-                        "RM::deleteItem(" + id + ", " + key + ") item deleted" );
+                        "RM::deleteItem(" + id + ", " + key + ") item deleted");
                 return true;
             }
             else {
                 Trace.info("SUBMIT TRANSACTION:" +
                         "RM::deleteItem(" + id + ", " + key + ") item can't be deleted " +
-                        "because some customers reserved it" );
+                        "because some customers reserved it");
                 return false;
             }
         } // if

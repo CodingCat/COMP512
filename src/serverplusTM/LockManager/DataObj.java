@@ -1,4 +1,4 @@
-package LockManager;
+package serverplusTM.LockManager;
 
 public class DataObj extends TrxnObj
 {

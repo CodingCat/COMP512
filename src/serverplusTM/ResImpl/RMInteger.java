@@ -2,9 +2,9 @@
 // adapted Kevin T. Manley
 // CSE 593
 // -------------------------------
-package ResImpl;
+package serverplusTM.ResImpl;
 
-import java.io.*;
+import java.io.Serializable;
 
 // A simple Integer wrapper
 public class RMInteger extends RMItem implements Serializable

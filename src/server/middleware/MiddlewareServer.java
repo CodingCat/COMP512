@@ -4,7 +4,10 @@
 package server.middleware;
 
 import server.ResImpl.*;
-import server.ResInterface.*;
+import server.ResInterface.CarInterface;
+import server.ResInterface.FlightInterface;
+import server.ResInterface.HotelInterface;
+import server.ResInterface.ResourceManager;
 
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;

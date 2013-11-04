@@ -1,19 +1,15 @@
-package ResImpl;
+package serverplusTM.ResImpl;
+
+import serverplusTM.LockManager.DeadlockException;
+import serverplusTM.LockManager.InvalidTransactionException;
+import serverplusTM.LockManager.LockManager;
+import serverplusTM.LockManager.TransactionAbortedException;
 
 import java.rmi.RemoteException;
-import java.util.Date;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import LockManager.DeadlockException;
-import LockManager.InvalidTransactionException;
-import LockManager.LockManager;
-import LockManager.RedundantLockRequestException;
-import LockManager.TransactionAbortedException;
-import ResInterface.CarInterface;
-import ResInterface.FlightInterface;
-import ResInterface.HotelInterface;
 
 public class TransactionMgr
 {
@@ -25,9 +21,9 @@ public class TransactionMgr
 	private Map<Integer,Boolean> TrxnIDList;//maintains the transactions IDs
 	public static final int READ = LockManager.READ;
     public static final int WRITE = LockManager.WRITE;
-	static FlightInterface rmFlight = null;
-	static CarInterface rmCar = null;
-	static HotelInterface rmHotel = null;
+	static FlightResourceManager rmFlight = null;
+	static CarResourceManager rmCar = null;
+	static HotelResourceManager rmHotel = null;
 	private Map<Integer,ArrayList<String>> TxnRsMgrMap;//maintains the RMs which the trxn is communicating
 	Map<Integer,Long> TxnTimestampMap;//For timeout of trxns
     LockManager lm;
@@ -70,7 +66,7 @@ public class TransactionMgr
 			throw new InvalidTransactionException(txID,"Please restart the transaction");
 		for(int i=0;i<size;i++)
 		{
-			switch(txnsStr[i])
+			/*switch(txnsStr[i])
 			{
 			case "flight":
 				if(rmFlight!=null)
@@ -84,7 +80,20 @@ public class TransactionMgr
 				if(rmHotel!=null)
 					rmHotel.commit(txID);
 				break;
-			}
+			} */
+            if(txnsStr[i].equals("flight")) {
+                if(rmFlight!=null)
+                    rmFlight.commit(txID);
+            }
+            if (txnsStr[i].equals("car")) {
+                if(rmCar!=null)
+                    rmCar.commit(txID);
+            }
+            if (txnsStr[i].equals("hotel")) {
+                if(rmHotel!=null)
+                    rmHotel.commit(txID);
+            }
+
 		}
 		TxnRsMgrMap.remove(txID);
 		TxnTimestampMap.remove(txID);
@@ -100,7 +109,7 @@ public class TransactionMgr
 			throw new InvalidTransactionException(txID,"Please restart the transaction");
 		for(int i=0;i<size;i++)
 		{
-			switch(txnsStr[i])
+			/*switch(txnsStr[i])
 			{
 			case "flight":
 				if(rmFlight!=null)
@@ -114,7 +123,19 @@ public class TransactionMgr
 				if(rmHotel!=null)
 					rmHotel.abort(txID);
 				break;
-			}
+			} */
+            if(txnsStr[i].equals("flight")) {
+                if(rmFlight!=null)
+                    rmFlight.abort(txID);
+            }
+            if (txnsStr[i].equals("car")) {
+                if(rmCar!=null)
+                    rmCar.abort(txID);
+            }
+            if (txnsStr[i].equals("hotel")) {
+                if(rmHotel!=null)
+                    rmHotel.abort(txID);
+            }
 		}
 		TxnRsMgrMap.remove(txID);
 		TxnTimestampMap.remove(txID);
@@ -181,7 +202,11 @@ class TimeoutThread extends Thread {
 	    			if(currtime-tm.TxnTimestampMap.get(key_Set[i])>timeoutVal)
 	    			{
 	    				ListtxIDDel.add(key_Set[i]);
-	    				tm.abort(key_Set[i]);
+                        try {
+	    				    tm.abort(key_Set[i]);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
 	    			}
 	    		}
 	    		for(int i=0;i<ListtxIDDel.size();i++)

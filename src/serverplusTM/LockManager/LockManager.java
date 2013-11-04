@@ -1,4 +1,4 @@
-package LockManager;
+package serverplusTM.LockManager;
 
 import java.util.BitSet;
 import java.util.Vector;

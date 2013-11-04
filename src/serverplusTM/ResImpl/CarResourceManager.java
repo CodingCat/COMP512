@@ -1,7 +1,9 @@
 /*
  * Author: Navjot Singh
  */
-package ResImpl;
+package serverplusTM.ResImpl;
+
+import serverplusTM.ResInterface.CarInterface;
 
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
@@ -9,9 +11,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import ResInterface.CarInterface;
-
-public class CarResourceManager extends GenericResourceManager implements CarInterface
+public class CarResourceManager extends TransGenericResourceManager implements CarInterface
 {
 	public RMItem readData( int id, String key )
     {

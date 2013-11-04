@@ -1,4 +1,4 @@
-package LockManager;
+package serverplusTM.LockManager;
 
 /*
     The transaction is deadlocked.  Somebody should abort it.

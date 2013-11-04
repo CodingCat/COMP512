@@ -1,7 +1,7 @@
 /*
  * Author: Navjot Singh
  */
-package ResImpl;
+package serverplusTM.ResImpl;
 
 import java.rmi.RemoteException;
 

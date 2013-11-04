@@ -1,7 +1,9 @@
 /*
  * Author: Navjot Singh
  */
-package ResImpl;
+package serverplusTM.ResImpl;
+
+import serverplusTM.ResInterface.HotelInterface;
 
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
@@ -9,10 +11,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import ResInterface.CarInterface;
-import ResInterface.HotelInterface;
-
-public class HotelResourceManager extends GenericResourceManager implements HotelInterface
+public class HotelResourceManager extends TransGenericResourceManager implements HotelInterface
 {
 
 	public RMItem readData( int id, String key )

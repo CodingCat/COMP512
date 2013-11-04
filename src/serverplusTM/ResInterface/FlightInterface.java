@@ -1,12 +1,12 @@
 /*
  * Author: Navjot Singh
  */
-package ResInterface;
+package serverplusTM.ResInterface;
+
+import serverplusTM.ResImpl.RMItem;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-
-import ResImpl.RMItem;
 
 
 public interface FlightInterface extends Remote 
@@ -44,4 +44,5 @@ public interface FlightInterface extends Remote
     public boolean reserveFlight(int id, String key) 
 	throws RemoteException;
     public boolean shutdown() throws RemoteException;
+
 }

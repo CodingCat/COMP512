@@ -1,8 +1,10 @@
 /*
  * Author: Navjot Singh
  */
-package ResImpl;
+package serverplusTM.ResImpl;
 
+
+import serverplusTM.ResInterface.FlightInterface;
 
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
@@ -10,9 +12,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import ResInterface.FlightInterface;
-
-public class FlightResourceManager extends GenericResourceManager implements FlightInterface {
+public class FlightResourceManager extends TransGenericResourceManager implements FlightInterface {
 
 	
 	public RMItem readData( int id, String key ) throws RemoteException
