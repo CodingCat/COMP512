@@ -11,77 +11,77 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+
 public class CarResourceManager extends TransGenericResourceManager implements CarInterface
 {
-	public RMItem readData( int id, String key )
+    public RMItem readData( int id, String key )
     {
-		return readDatafromRM(id, key);
+        return readDatafromRM(id, key);
     }
 
-    // Writes a data item
-    /*public void writeData( int id, String key, RMItem value )
-    {
-    	super.writeData(id, key, value);
-    }*/
+
     public boolean deleteReservation(int id,String key,int reservedItemCount)
     {
-    	return deleteReservationfromRM(id, key, reservedItemCount);
+        return deleteReservationfromRM(id, key, reservedItemCount);
     }
 
-	@Override
-	public synchronized boolean addCars(int id, String location, int count, int price)
-			throws RemoteException
-	{
-		Trace.info("RM::addCars(" + id + ", " + location + ", " + count + ", $" + price + ") called" );
+    @Override
+    public synchronized boolean addCars(int id, String location, int count, int price)
+            throws RemoteException
+    {
+        Trace.info("RM::addCars(" + id + ", " + location + ", " + count + ", $" + price + ") called" );
         Car curObj = (Car) readData( id, Car.getKey(location) );
         if ( curObj == null ) {
             // car location doesn't exist...add it
             Car newObj = new Car( location, count, price );
             writeData( id, newObj.getKey(), newObj );
-            Trace.info("RM::addCars(" + id + ") created new location " + location + ", count=" + count + ", price=$" + price );
+            Trace.info("RM::addCars(" + id + ") created new location " + location +
+                    ", count=" + count + ", price=$" + price );
         } else {
             // add count to existing car location and update price...
-            curObj.setCount( curObj.getCount() + count );
+            Car newObj = curObj.clone();
+            newObj.setCount( curObj.getCount() + count );
             if ( price > 0 ) {
-                curObj.setPrice( price );
+                newObj.setPrice( price );
             } // if
-            writeData( id, curObj.getKey(), curObj );
-            Trace.info("RM::addCars(" + id + ") modified existing location " + location + ", count=" + curObj.getCount() + ", price=$" + price );
+            writeData( id, newObj.getKey(), newObj );
+            Trace.info("RM::addCars(" + id + ") modified existing location " +
+                    location + ", count=" + newObj.getCount() + ", price=$" + price );
         } // else
         return(true);
-	}
+    }
 
-	@Override
-	public synchronized boolean deleteCars(int id, String location) throws RemoteException
-	{
-		return deleteItem(id, Car.getKey(location));
-	}
+    @Override
+    public synchronized boolean deleteCars(int id, String location) throws RemoteException
+    {
+        return deleteItem(id, Car.getKey(location));
+    }
 
-	@Override
-	public int queryCars(int id, String location) throws RemoteException
-	{
-		return queryNum(id, Car.getKey(location));
-	}
+    @Override
+    public int queryCars(int id, String location) throws RemoteException
+    {
+        return queryNum(id, Car.getKey(location));
+    }
 
-	@Override
-	public int queryCarsPrice(int id, String location) throws RemoteException
-	{
-		return queryPrice(id, Car.getKey(location));
-	}
+    @Override
+    public int queryCarsPrice(int id, String location) throws RemoteException
+    {
+        return queryPrice(id, Car.getKey(location));
+    }
 
-	@Override
-	public boolean reserveCar(int id, String key)
-			throws RemoteException
-	{
-		return reserveItem(id,key);
-	}
+    @Override
+    public boolean reserveCar(int id, String key)
+            throws RemoteException
+    {
+        return reserveItem(id,key);
+    }
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args)
-	{
-		String server = "localhost";
+    /**
+     * @param args
+     */
+    public static void main(String[] args)
+    {
+        String server = "localhost";
         int port = 1099;
 
         if (args.length == 1) {
@@ -95,9 +95,8 @@ public class CarResourceManager extends TransGenericResourceManager implements C
 
         try {
             // create a new Server object
-        	CarResourceManager obj = new CarResourceManager();
-        	obj.m_itemHT = new RMHashtable();
-        	obj.mport=port;
+            CarResourceManager obj = new CarResourceManager();
+            obj.m_itemHT = new RMHashtable();
             // dynamically generate the stub (client proxy)
             CarInterface rm = (CarInterface) UnicastRemoteObject.exportObject(obj, 0);
 
@@ -115,27 +114,5 @@ public class CarResourceManager extends TransGenericResourceManager implements C
         if (System.getSecurityManager() == null) {
             System.setSecurityManager(new RMISecurityManager());
         }
-	}
-	
-	@Override
-	public boolean shutdown() throws RemoteException
-	{
-		try
-		{
-		Registry registry = LocateRegistry.getRegistry(mport);
-        
-        // Unregister CarRM obj
-        registry.unbind("Group28CarRM");
-
-        // Unexport; this will also remove from the RMI runtime
-        UnicastRemoteObject.unexportObject(this, true);
-
-        System.out.println("CarRM Server exiting.");
-		}
-		catch(Exception e)
-		{
-			return false;
-		}
-		return true;
-	}
+    }
 }

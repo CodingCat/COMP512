@@ -14,10 +14,10 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class FlightResourceManager extends TransGenericResourceManager implements FlightInterface {
 
-	
-	public RMItem readData( int id, String key ) throws RemoteException
+
+    public RMItem readData( int id, String key ) throws RemoteException
     {
-		return readDatafromRM(id, key);
+        return readDatafromRM(id, key);
     }
 
     // Writes a data item
@@ -25,66 +25,71 @@ public class FlightResourceManager extends TransGenericResourceManager implement
     {
     	super.writeData(id, key, value);
     }*/
-	public boolean deleteReservation(int id,String key,int reservedItemCount) throws RemoteException
+    public boolean deleteReservation(int id,String key,int reservedItemCount) throws RemoteException
     {
-    	return deleteReservationfromRM(id, key, reservedItemCount);
+        return deleteReservationfromRM(id, key, reservedItemCount);
     }
-	@Override
-	public synchronized boolean addFlight(int id, int flightNum, int flightSeats,
-			int flightPrice) throws RemoteException 
-	{
-		Trace.info("RM::addFlight(" + id + ", " + flightNum + ", $" + flightPrice + ", " + flightSeats + ") called" );
+
+    @Override
+    public synchronized boolean addFlight(int id, int flightNum, int flightSeats,
+                                          int flightPrice) throws RemoteException
+    {
+        Trace.info("RM::addFlight(" + id + ", " + flightNum + ", $" + flightPrice + ", " + flightSeats + ") called");
         Flight curObj = (Flight) readData( id, Flight.getKey(flightNum) );
         if ( curObj == null ) {
             // doesn't exist...add it
             Flight newObj = new Flight( flightNum, flightSeats, flightPrice );
             writeData( id, newObj.getKey(), newObj );
-            Trace.info("RM::addFlight(" + id + ") created new flight " + flightNum + ", seats=" +
-                    flightSeats + ", price=$" + flightPrice );
+            server.ResImpl.Trace.info(
+                    "RM::addFlight(" + id + ") created new flight " + flightNum + ", seats=" +
+                            flightSeats + ", price=$" + flightPrice);
         } else {
             // add seats to existing flight and update the price...
-            curObj.setCount( curObj.getCount() + flightSeats );
+            Flight newobj = curObj.clone();
+            newobj.setCount( curObj.getCount() + flightSeats );
             if ( flightPrice > 0 ) {
-                curObj.setPrice( flightPrice );
+                newobj.setPrice( flightPrice );
             } // if
-            writeData( id, curObj.getKey(), curObj );
-            Trace.info("RM::addFlight(" + id + ") modified existing flight " + flightNum + ", seats=" + curObj.getCount() + ", price=$" + flightPrice );
+            writeData( id, newobj.getKey(), newobj );
+            Trace.info(
+                    "RM::addFlight(" + id + ") modified existing flight " +
+                            flightNum + ", seats=" + curObj.getCount() + ", price=$" + flightPrice);
         } // else
         return(true);
-	}
+    }
 
-	@Override
-	public synchronized boolean deleteFlight(int id, int flightNum) throws RemoteException 
-	{
-		return deleteItem(id, Flight.getKey(flightNum));	
-	}
+    @Override
+    public synchronized boolean deleteFlight(int id, int flightNum) throws RemoteException
+    {
+        return deleteItem(id, server.ResImpl.Flight.getKey(flightNum));
+    }
 
-	@Override
-	public int queryFlight(int id, int flightNumber) throws RemoteException 
-	{
-		return queryNum(id, Flight.getKey(flightNumber));
-	}
+    @Override
+    public int queryFlight(int id, int flightNumber) throws RemoteException
+    {
+        return queryNum(id, server.ResImpl.Flight.getKey(flightNumber));
+    }
 
-	@Override
-	public int queryFlightPrice(int id, int flightNumber)
-			throws RemoteException 
-	{
-		return queryPrice(id, Flight.getKey(flightNumber));
-	}
+    @Override
+    public int queryFlightPrice(int id, int flightNumber)
+            throws RemoteException
+    {
+        return queryPrice(id, Flight.getKey(flightNumber));
+    }
 
-	@Override
-	public boolean reserveFlight(int id, String key)
-			throws RemoteException 
-	{
-		return reserveItem(id,key);
-	}
+    @Override
+    public boolean reserveFlight(int id, String key)
+            throws RemoteException
+    {
+        return reserveItem(id,key);
+    }
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) 
-	{
-		String server = "localhost";
+    /**
+     * @param args
+     */
+    public static void main(String[] args)
+    {
+        String server = "localhost";
         int port = 1099;
 
         if (args.length == 1) {
@@ -98,11 +103,11 @@ public class FlightResourceManager extends TransGenericResourceManager implement
 
         try {
             // create a new Server object
-        	FlightResourceManager obj = new FlightResourceManager();
-        	obj.m_itemHT = new RMHashtable();
-        	obj.mport=port;
+            FlightResourceManager obj = new FlightResourceManager();
+            obj.m_itemHT = new RMHashtable();
             // dynamically generate the stub (client proxy)
-            FlightInterface rm = (FlightInterface) UnicastRemoteObject.exportObject(obj, 0);
+            server.ResInterface.FlightInterface rm =
+                    (server.ResInterface.FlightInterface) UnicastRemoteObject.exportObject(obj, 0);
 
             // Bind the remote object's stub in the registry
             Registry registry = LocateRegistry.getRegistry(port);
@@ -120,28 +125,6 @@ public class FlightResourceManager extends TransGenericResourceManager implement
         }
 
 
-	}
-
-	@Override
-	public boolean shutdown() throws RemoteException
-	{
-		try
-		{
-		Registry registry = LocateRegistry.getRegistry(mport);
-        
-        // Unregister FlightRM obj
-        registry.unbind("Group28FlightRM");
-
-        // Unexport; this will also remove from the RMI runtime
-        UnicastRemoteObject.unexportObject(this, true);
-
-        System.out.println("FlightRM Server exiting.");
-		}
-		catch(Exception e)
-		{
-			return false;
-		}
-		return true;
-	}
+    }
 
 }
