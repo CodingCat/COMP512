@@ -121,10 +121,10 @@ public class TransGenericResourceManager extends GenericResourceManager {
         } // if
     }
 
-    private void deleteReservation(ReservableItem item) {
-        int r = item.getReserved();
-        item.setReserved(item.getReserved() + r);
-        item.setCount(item.getCount() + r);
+    private void deleteReservation(ReservableItem item, int reservedItemCount) {
+        //int r = item.getReserved();
+        item.setReserved(item.getReserved() + reservedItemCount);
+        item.setCount(item.getCount() + reservedItemCount);
     }
 
     @Override
@@ -136,7 +136,7 @@ public class TransGenericResourceManager extends GenericResourceManager {
         Tuple3 t3 = new Tuple3(key, 4, item);
         t3.oldint = item.getReserved();
         operationList.get(key).add(0, new Tuple3(key, 4, item));
-        deleteReservation(item);
+        deleteReservation(item, reservedItemCount);
         return true;
     }
 
