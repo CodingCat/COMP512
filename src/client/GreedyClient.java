@@ -892,15 +892,23 @@ public class GreedyClient {
                 String[] s = strLine.split(" ");
                 loadconf.add(new Tuple2(Integer.parseInt(s[0]), Integer.parseInt(s[1])));
             }
+            fstream.close();
+            in.close();
+            br.close();
+
+            fstream = new FileInputStream(dataset);
+            in = new DataInputStream(fstream);
+            br = new BufferedReader(new InputStreamReader(in));
 
             //initialize dataset
             while ((strLine = br.readLine()) != null)   {
                 sendCommand(strLine);
             }
             int loadidx = 0;
-            int nextTime = 0;
+            int nextTime;
+            int base = 1000 / transactionPerSecond - 100;
             for (int i = 0; i < iterationum; i++) {
-                nextTime = 400 + r.nextInt(600 - 400);
+                nextTime = base + r.nextInt(200);
                 int weight = loadconf.get(loadidx).y;
                 int type = loadconf.get(loadidx).x;
                 pm.markStartStamp();
