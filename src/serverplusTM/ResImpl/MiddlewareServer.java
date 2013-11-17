@@ -246,7 +246,8 @@ public class MiddlewareServer implements ResourceManager {
             {        
                 String reservedkey = (String) (e.nextElement());
                 ReservedItem reserveditem = cust.getReservedItem(reservedkey);
-                Trace.info("RM::deleteCustomer(" + id + ", " + customerID + ") has reserved " + reserveditem.getKey() + " " +  reserveditem.getCount() +  " times"  );
+                Trace.info("RM::deleteCustomer(" + id + ", " + customerID +
+                        ") has reserved " + reserveditem.getKey() + " " +  reserveditem.getCount() +  " times"  );
                 
                 ReservableItem item;
                 if(rmFlight!=null)
@@ -254,7 +255,9 @@ public class MiddlewareServer implements ResourceManager {
 		            item = (ReservableItem) rmFlight.readData(id, reserveditem.getKey());
 		            if(item!=null)//Item was a flight
 		            {
-		            	Trace.info("RM::deleteCustomer(" + id + ", " + customerID + ") has reserved " + reserveditem.getKey() + "which is reserved" +  item.getReserved() +  " times and is still available " + item.getCount() + " times"  );
+		            	Trace.info("RM::deleteCustomer(" + id + ", " + customerID + ") has reserved "
+                                + reserveditem.getKey() + "which is reserved" +  item.getReserved() +  " times " +
+                                "and is still available " + item.getCount() + " times"  );
 		            	rmFlight.deleteReservation(id,reserveditem.getKey(),reserveditem.getCount());
 		            }
                 }

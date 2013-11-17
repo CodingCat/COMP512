@@ -121,10 +121,10 @@ public class TransGenericResourceManager extends GenericResourceManager {
         } // if
     }
 
-    private void deleteReservation(ReservableItem item) {
-        int r = item.getReserved();
-        item.setReserved(item.getReserved() + r);
-        item.setCount(item.getCount() + r);
+    private void deleteReservation(ReservableItem item, int reservedItemCount) {
+        //int r = item.getReserved();
+        item.setReserved(item.getReserved() - reservedItemCount);
+        item.setCount(item.getCount() + reservedItemCount);
     }
 
     @Override
@@ -135,8 +135,8 @@ public class TransGenericResourceManager extends GenericResourceManager {
         checkOperationQueue(id);
         Tuple3 t3 = new Tuple3(key, 4, item);
         t3.oldint = item.getReserved();
-        operationList.get(key).add(0, new Tuple3(key, 4, item));
-        deleteReservation(item);
+        operationList.get(id).add(0, t3);
+        deleteReservation(item, reservedItemCount);
         return true;
     }
 
@@ -178,11 +178,13 @@ public class TransGenericResourceManager extends GenericResourceManager {
                             if (t3.operation == 3) {
                               // reserve, recover with 1
                                 ReservableItem ri = (ReservableItem) super.readDatafromRM(transId, t3.key);
-                                ri.setReserved(ri.getReserved() + 1);
+                                ri.setCount(ri.getCount() + 1);
+                                ri.setReserved(ri.getReserved() - 1);
                             }
                             if (t3.operation == 4) {
                                 //delete reservation, change back to the normal value
                                 ReservableItem ri = (ReservableItem) super.readDatafromRM(transId, t3.key);
+                                ri.setCount(ri.getCount() - (t3.oldint - ri.getReserved()));
                                 ri.setReserved(t3.oldint);
                             }
                         }
