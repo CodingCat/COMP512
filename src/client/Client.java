@@ -1,5 +1,6 @@
 package client;
-import server.ResInterface.ResourceManager;
+
+import serverplusTM.ResInterface.ResourceManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -570,6 +571,85 @@ public class Client
                     }
                     break;
 
+                case 23:  //start trxn
+                    if(arguments.size()!=1){
+                        obj.wrongNumber();
+                        break;
+                    }
+                    System.out.println("Starting new transaction");
+                    try{
+                        int trxnID=rm.start();
+                        if(trxnID!=-1)
+                            System.out.println("new transaction id:"+trxnID);
+                        else
+                            System.out.println("new transaction could not be started.");
+                    }
+                    catch(Exception e){
+                        System.out.println("EXCEPTION:");
+                        System.out.println(e.getMessage());
+                        e.printStackTrace();
+                    }
+                    break;
+
+                case 24:  //commit trxn
+                    if(arguments.size()!=2){
+                        obj.wrongNumber();
+                        break;
+                    }
+                    System.out.println("Commiting the transaction with id:"+arguments.elementAt(1));
+                    try{
+                        int trxnID=obj.getInt(arguments.elementAt(1));
+                        boolean bcommited=rm.commit(trxnID);
+                        if(bcommited)
+                            System.out.println("transaction id:"+trxnID+" commited.");
+                        else
+                            System.out.println("transaction could not be commited.");
+                    }
+                    catch(Exception e){
+                        System.out.println("EXCEPTION:");
+                        System.out.println(e.getMessage());
+                        e.printStackTrace();
+                    }
+                    break;
+
+                case 25:  //abort trxn
+                    if(arguments.size()!=2){
+                        obj.wrongNumber();
+                        break;
+                    }
+                    System.out.println("Aborting the transaction with id:"+arguments.elementAt(1));
+                    try{
+                        int trxnID=obj.getInt(arguments.elementAt(1));
+                        rm.abort(trxnID);
+                        System.out.println("transaction id:"+trxnID+" aborted.");
+                    }
+                    catch(Exception e){
+                        System.out.println("EXCEPTION:");
+                        System.out.println(e.getMessage());
+                        e.printStackTrace();
+                    }
+                    break;
+
+                case 26:  //shutdown system
+                    if(arguments.size()!=1){
+                        obj.wrongNumber();
+                        break;
+                    }
+                    System.out.println("Shutting down the system");
+                    try{
+                        boolean bshutdown=rm.shutdown();
+                        if(bshutdown)
+                            System.out.println("System shutdown successful");
+                        else
+                            System.out.println("System shutdown Unsuccessful.");
+                    }
+                    catch(Exception e){
+                        System.out.println("EXCEPTION:");
+                        System.out.println(e.getMessage());
+                        e.printStackTrace();
+                    }
+                    break;
+
                 default:
                     System.out.println("The interface does not support this command.");
                     break;
@@ -636,6 +716,14 @@ public class Client
             return 21;
         else if (argument.compareToIgnoreCase("newcustomerid")==0)
             return 22;
+        else if (argument.compareToIgnoreCase("start")==0)
+            return 23;
+        else if (argument.compareToIgnoreCase("commit")==0)
+            return 24;
+        else if (argument.compareToIgnoreCase("abort")==0)
+            return 25;
+        else if (argument.compareToIgnoreCase("shutdown")==0)
+            return 26;
         else
             return 666;
 
@@ -649,7 +737,7 @@ public class Client
         System.out.println("newflight\nnewcar\nnewroom\nnewcustomer\nnewcusomterid\ndeleteflight\ndeletecar\ndeleteroom");
         System.out.println("deletecustomer\nqueryflight\nquerycar\nqueryroom\nquerycustomer");
         System.out.println("queryflightprice\nquerycarprice\nqueryroomprice");
-        System.out.println("reserveflight\nreservecar\nreserveroom\nitinerary");
+        System.out.println("reserveflight\nreservecar\nreserveroom\nitinerary\nstart\ncommit\nabort\nshutdown");
         System.out.println("nquit");
         System.out.println("\ntype help, <commandname> for detailed info(NOTE the use of comma).");
     }
@@ -835,6 +923,27 @@ public class Client
                 System.out.println("\nUsage:");
                 System.out.println("\tnewcustomerid, <id>, <customerid>");
                 break;
+
+            case 23: //start
+                System.out.println("Purpose:");
+                System.out.println("\tStarts a new transaction");
+                break;
+            case 24: //commit
+                System.out.println("Purpose:");
+                System.out.println("\tCommits a transaction");
+                System.out.println("\nUsage:");
+                System.out.println("\tcommit,<Trxn id>");
+                break;
+            case 25: //abort
+                System.out.println("Purpose:");
+                System.out.println("\tAborts a transaction");
+                System.out.println("\nUsage:");
+                System.out.println("\tabort,<Trxn id>");
+                break;
+
+            case 26: //shutdown
+                System.out.println("Purpose:");
+                System.out.println("\tShutsdown the system");
 
             default:
                 System.out.println(command);

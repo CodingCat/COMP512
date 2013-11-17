@@ -33,6 +33,8 @@ public interface ResourceManager extends Remote
      *
      * @return success.
      */
+    public boolean isAlive() throws RemoteException;
+    public boolean isPrimary() throws RemoteException;
 	public int start() throws RemoteException;
 	public void abort(int txID) throws RemoteException,InvalidTransactionException;
 	public boolean commit(int txID) throws RemoteException, TransactionAbortedException,
