@@ -18,20 +18,20 @@ public abstract class GenericResourceManager
     }
 
     // Writes a data item
-    public void writeData( int id, String key, RMItem value )
+    public void writeData( int id,int operationID, String key, RMItem value )
     {
         synchronized(m_itemHT) {
             m_itemHT.put(key, value);
         }
     }
  // Remove the item out of storage
-    protected RMItem removeData(int id, String key) {
+    protected RMItem removeData(int id,int operationID, String key) {
         synchronized(m_itemHT) {
             return (RMItem)m_itemHT.remove(key);
         }
     }
     
-    public synchronized boolean deleteReservationfromRM(int id,String key,int reservedItemCount)
+    public synchronized boolean deleteReservationfromRM(int id,int operationID,String key,int reservedItemCount)
     {
     	ReservableItem item;
         item = (ReservableItem) readDatafromRM(id, key);
@@ -40,7 +40,7 @@ public abstract class GenericResourceManager
     	return true;
     }
     
-    public synchronized boolean reserveItem(int id, String key)
+    public synchronized boolean reserveItem(int id,int operationID, String key)
 			throws RemoteException
 	{
 		ReservableItem item = (ReservableItem)readDatafromRM(id, key);
@@ -50,7 +50,7 @@ public abstract class GenericResourceManager
 	}
     
     // deletes the entire item
-    protected boolean deleteItem(int id, String key)
+    protected boolean deleteItem(int id,int operationID, String key)
     {
         Trace.info("RM::deleteItem(" + id + ", " + key + ") called" );
         ReservableItem curObj = (ReservableItem) readDatafromRM( id, key );
@@ -60,7 +60,7 @@ public abstract class GenericResourceManager
             return false;
         } else {
             if (curObj.getReserved()==0) {
-                removeData(id, curObj.getKey());
+                removeData(id,operationID, curObj.getKey());
                 Trace.info("RM::deleteItem(" + id + ", " + key + ") item deleted" );
                 return true;
             }
@@ -73,7 +73,7 @@ public abstract class GenericResourceManager
     
 
     // query the number of available seats/rooms/cars
-    protected int queryNum(int id, String key) {
+    protected int queryNum(int id,int operationID, String key) {
         Trace.info("RM::queryNum(" + id + ", " + key + ") called" );
         ReservableItem curObj = (ReservableItem) readDatafromRM( id, key);
         int value = 0;  
@@ -85,7 +85,7 @@ public abstract class GenericResourceManager
     }    
     
     // query the price of an item
-    protected int queryPrice(int id, String key) {
+    protected int queryPrice(int id,int operationID, String key) {
         Trace.info("RM::queryPrice(" + id + ", " + key + ") called" );
         ReservableItem curObj = (ReservableItem) readDatafromRM( id, key);
         int value = 0; 

@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TransGenericResourceManager extends GenericResourceManager {
+	
+	//TODO: add operationIDList to check if the operation was already performed or not.
+	
     class Tuple3 {
         String key;
         int operation;    // 0 - read, 1 - write, 2 - delete, 3- reserve, 4 - delete reservation
@@ -20,8 +23,10 @@ public class TransGenericResourceManager extends GenericResourceManager {
     private ConcurrentHashMap<Integer, ArrayList<Tuple3>> operationList =
             new ConcurrentHashMap<Integer, ArrayList<Tuple3>>();//transaction_id -> tuple2 list
 
-    private void checkOperationQueue(int id) {
-        if (!operationList.contains(id)) {
+    private void checkOperationQueue(int id) 
+    {
+        if (!operationList.containsKey(id)) 
+        {
             operationList.put(id, new ArrayList<Tuple3>());
         }
     }
@@ -35,40 +40,40 @@ public class TransGenericResourceManager extends GenericResourceManager {
     }
 
     // Writes a data item
-    public void writeData( int id, String key, RMItem value ) {
+    public void writeData( int id,int operationID, String key, RMItem value ) {
         checkOperationQueue(id);
         RMItem oldvalue = super.readDatafromRM(id, key);
         operationList.get(id).add(0, new Tuple3(key, 1, oldvalue));
         //realize the write operation
-        super.writeData(id, key, value);
+        super.writeData(id,operationID, key, value);
     }
 
     // Remove the item out of storage
-    protected RMItem removeData(int id, String key) {
+    protected RMItem removeData(int id,int operationID, String key) {
         checkOperationQueue(id);
         //read old value
         RMItem oldvalue = super.readDatafromRM(id, key);
         operationList.get(id).add(0, new Tuple3(key, 2, oldvalue));
-        super.removeData(id, key);
+        super.removeData(id,operationID, key);
         return oldvalue;//super.readDatafromRM(id, key);
     }
 
 
-    public synchronized boolean reserveItem(int id, String key)
+    public synchronized boolean reserveItem(int id,int operationID, String key)
             throws RemoteException
     {
         checkOperationQueue(id);
         //read old value
         //ReservableItem oldvalue = (ReservableItem) super.readDatafromRM(id, key);
         operationList.get(id).add(0, new Tuple3(key, 3, null));
-        super.reserveItem(id, key);
+        super.reserveItem(id,operationID, key);
         return true;
     }
 
 
     // query the number of available seats/rooms/cars
     @Override
-    protected int queryNum(int id, String key) {
+    protected int queryNum(int id,int operationID, String key) {
         Trace.info("SUBMIT TRANSACTION:" +
                 "RM::queryNum(" + id + ", " + key + ") called");
         ReservableItem curObj = (ReservableItem) readDatafromRM( id, key);
@@ -83,7 +88,7 @@ public class TransGenericResourceManager extends GenericResourceManager {
 
     // query the price of an item
     @Override
-    protected int queryPrice(int id, String key) {
+    protected int queryPrice(int id,int operationID, String key) {
         Trace.info("RM::queryPrice(" + id + ", " + key + ") called");
         ReservableItem curObj = (ReservableItem) readDatafromRM( id, key);
         int value = 0;
@@ -97,7 +102,7 @@ public class TransGenericResourceManager extends GenericResourceManager {
 
     // deletes the entire item
     @Override
-    protected boolean deleteItem(int id, String key) {
+    protected boolean deleteItem(int id,int operationID, String key) {
         Trace.info("RM::deleteItem(" + id + ", " + key + ") called");
         ReservableItem curObj = (ReservableItem) readDatafromRM( id, key );
         // Check if there is such an item in the storage
@@ -107,7 +112,7 @@ public class TransGenericResourceManager extends GenericResourceManager {
             return false;
         } else {
             if (curObj.getReserved()==0) {
-                removeData(id, curObj.getKey());
+                removeData(id,operationID, curObj.getKey());
                 Trace.info("SUBMIT TRANSACTION:" +
                         "RM::deleteItem(" + id + ", " + key + ") item deleted");
                 return true;
@@ -121,14 +126,14 @@ public class TransGenericResourceManager extends GenericResourceManager {
         } // if
     }
 
-    private void deleteReservation(ReservableItem item, int reservedItemCount) {
-        //int r = item.getReserved();
+    private void deleteReservation(ReservableItem item, int reservedItemCount) 
+    {
         item.setReserved(item.getReserved() - reservedItemCount);
         item.setCount(item.getCount() + reservedItemCount);
     }
 
     @Override
-    public boolean deleteReservationfromRM(int id, String key, int reservedItemCount) {
+    public boolean deleteReservationfromRM(int id,int operationID, String key, int reservedItemCount) {
         ReservableItem item;
         //read old value
         item = (ReservableItem) readDatafromRM(id, key);
@@ -137,14 +142,17 @@ public class TransGenericResourceManager extends GenericResourceManager {
         t3.oldint = item.getReserved();
         operationList.get(id).add(0, t3);
         deleteReservation(item, reservedItemCount);
+        System.out.println("Delete reservation called.");
         return true;
     }
 
 
     public boolean commit(int transid) {
-        if (operationList.containsKey(transid)) {
+        if (operationList.containsKey(transid)) 
+        {
             //realize the operations
             operationList.remove(transid);
+            System.out.println("\n\nCommit called\n\n");
             return true;
         }
         return false;
@@ -152,6 +160,7 @@ public class TransGenericResourceManager extends GenericResourceManager {
 
     public boolean abort(int transId) {
         try {
+        	System.out.println("\n\nAbort called\n\n");
             if (operationList.containsKey(transId)) {
                 //realize the operations
                 for (Tuple3 t3 : operationList.get(transId)) {
@@ -162,10 +171,10 @@ public class TransGenericResourceManager extends GenericResourceManager {
                         if (t3.operation == 1) {
                             //write ...
                             if (t3.value != null)
-                                super.writeData(transId, t3.key, t3.value);
+                                super.writeData(transId,-1, t3.key, t3.value);
                             else {
                                 //back to the normal value
-                                super.removeData(transId, t3.key);
+                                super.removeData(transId,-1, t3.key);
                             }
                         }
                         else {
@@ -173,23 +182,32 @@ public class TransGenericResourceManager extends GenericResourceManager {
                                 //remove,
                                 //add that value back
                                 //super.removeData(transId, t3.key);
-                                super.writeData(transId, t3.key, t3.value);
+                                super.writeData(transId,-1, t3.key, t3.value);
                             }
                             if (t3.operation == 3) {
                               // reserve, recover with 1
                                 ReservableItem ri = (ReservableItem) super.readDatafromRM(transId, t3.key);
-                                ri.setCount(ri.getCount() + 1);
+                                System.out.println("Reserve was called. Now deleting the reservation" +
+                                		"Old value count= "+ri.getCount()+" reserved="+ri.getReserved());
+                                ri.setCount(ri.getCount()+1);
                                 ri.setReserved(ri.getReserved() - 1);
+                                System.out.println("Reserve was called. Now deleting the reservation" +
+                                		"New value count= "+ri.getCount()+" reserved="+ri.getReserved());
                             }
                             if (t3.operation == 4) {
                                 //delete reservation, change back to the normal value
                                 ReservableItem ri = (ReservableItem) super.readDatafromRM(transId, t3.key);
+                                System.out.println("Delete reservation was called. Now re-reserving" +
+                                		"Old value count= "+ri.getCount()+" reserved="+ri.getReserved());
                                 ri.setCount(ri.getCount() - (t3.oldint - ri.getReserved()));
                                 ri.setReserved(t3.oldint);
+                                System.out.println("Delete reservation was called. Now re-reserving" +
+                                		"New value count= "+ri.getCount()+" reserved="+ri.getReserved());
                             }
                         }
                     }
                 }
+                operationList.remove(transId);
                 return true;
             }
             return false;
