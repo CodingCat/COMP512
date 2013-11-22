@@ -62,6 +62,7 @@ public class RepClient extends Client {
     private ArrayList<ServerDescriptor> serverList = new ArrayList<ServerDescriptor>();
     private int primaryIdx = 0;
     private ResourceManager primaryRM = null;
+    private int opid = 0;
 
     private boolean getServerList(String path) {
         try {
@@ -108,6 +109,10 @@ public class RepClient extends Client {
             }
         }
     }
+
+    private int getOPID() {
+        return opid++;
+    }
     
     private void mainLoop() {
         String command = "";
@@ -126,6 +131,8 @@ public class RepClient extends Client {
 
         System.out.println("\n\n\tClient Interface");
         System.out.println("Type \"help\" for list of supported commands");
+
+
         while(true){
             System.out.print("\n>");
             try{
@@ -165,7 +172,7 @@ public class RepClient extends Client {
                         flightNum = getInt(arguments.elementAt(2));
                         flightSeats = getInt(arguments.elementAt(3));
                         flightPrice = getInt(arguments.elementAt(4));
-                        if (primaryRM.addFlight(Id, flightNum, flightSeats, flightPrice))
+                        if (primaryRM.addFlight(Id, getOPID(), flightNum, flightSeats, flightPrice))
                             System.out.println("Flight added");
                         else
                             System.out.println("Flight could not be added");
@@ -183,7 +190,7 @@ public class RepClient extends Client {
                         location = getString(arguments.elementAt(2));
                         numCars = getInt(arguments.elementAt(3));
                         price = getInt(arguments.elementAt(4));
-                        if (primaryRM.addCars(Id, location, numCars, price))
+                        if (primaryRM.addCars(Id, getOPID(), location, numCars, price))
                             System.out.println("Cars added");
                         else
                             System.out.println("Cars could not be added");
@@ -202,7 +209,7 @@ public class RepClient extends Client {
                         location = getString(arguments.elementAt(2));
                         numRooms = getInt(arguments.elementAt(3));
                         price = getInt(arguments.elementAt(4));
-                        if (primaryRM.addRooms(Id, location, numRooms, price))
+                        if (primaryRM.addRooms(Id, getOPID(), location, numRooms, price))
                             System.out.println("Rooms added");
                         else
                             System.out.println("Rooms could not be added");
@@ -215,7 +222,7 @@ public class RepClient extends Client {
                         }
                         System.out.println("Adding a new Customer using id:" + arguments.elementAt(1));
                         Id = getInt(arguments.elementAt(1));
-                        int customer = primaryRM.newCustomer(Id);
+                        int customer = primaryRM.newCustomer(Id, getOPID());
                         System.out.println("new customer id:" + customer);
                         break;
 
@@ -228,7 +235,7 @@ public class RepClient extends Client {
                         System.out.println("Flight Number: " + arguments.elementAt(2));
                         Id = getInt(arguments.elementAt(1));
                         flightNum = getInt(arguments.elementAt(2));
-                        if (primaryRM.deleteFlight(Id, flightNum))
+                        if (primaryRM.deleteFlight(Id, getOPID(), flightNum))
                             System.out.println("Flight Deleted");
                         else
                             System.out.println("Flight could not be deleted");
@@ -243,7 +250,7 @@ public class RepClient extends Client {
                         Id = getInt(arguments.elementAt(1));
                         location = getString(arguments.elementAt(2));
 
-                        if (primaryRM.deleteCars(Id, location))
+                        if (primaryRM.deleteCars(Id, getOPID(), location))
                             System.out.println("Cars Deleted");
                         else
                             System.out.println("Cars could not be deleted");
@@ -258,7 +265,7 @@ public class RepClient extends Client {
                         System.out.println("Room Location: " + arguments.elementAt(2));
                         Id = getInt(arguments.elementAt(1));
                         location = getString(arguments.elementAt(2));
-                        if (primaryRM.deleteRooms(Id, location))
+                        if (primaryRM.deleteRooms(Id, getOPID(), location))
                             System.out.println("Rooms Deleted");
                         else
                             System.out.println("Rooms could not be deleted");
@@ -273,7 +280,7 @@ public class RepClient extends Client {
                         System.out.println("Customer id: " + arguments.elementAt(2));
                         Id = getInt(arguments.elementAt(1));
                         customer = getInt(arguments.elementAt(2));
-                        if (primaryRM.deleteCustomer(Id, customer))
+                        if (primaryRM.deleteCustomer(Id, getOPID(), customer))
                             System.out.println("Customer Deleted");
                         else
                             System.out.println("Customer could not be deleted");
@@ -288,7 +295,7 @@ public class RepClient extends Client {
                         System.out.println("Flight number: " + arguments.elementAt(2));
                         Id = getInt(arguments.elementAt(1));
                         flightNum = getInt(arguments.elementAt(2));
-                        int seats = primaryRM.queryFlight(Id, flightNum);
+                        int seats = primaryRM.queryFlight(Id, getOPID(), flightNum);
                         System.out.println("Number of seats available:" + seats);
                         break;
 
@@ -301,7 +308,7 @@ public class RepClient extends Client {
                         System.out.println("Car location: " + arguments.elementAt(2));
                         Id = getInt(arguments.elementAt(1));
                         location = getString(arguments.elementAt(2));
-                        numCars = primaryRM.queryCars(Id, location);
+                        numCars = primaryRM.queryCars(Id, getOPID(), location);
                         System.out.println("number of Cars at this location:" + numCars);
                         break;
 
@@ -314,7 +321,7 @@ public class RepClient extends Client {
                         System.out.println("Room location: " + arguments.elementAt(2));
                         Id = getInt(arguments.elementAt(1));
                         location = getString(arguments.elementAt(2));
-                        numRooms = primaryRM.queryRooms(Id, location);
+                        numRooms = primaryRM.queryRooms(Id, getOPID(), location);
                         System.out.println("number of Rooms at this location:" + numRooms);
                         break;
 
@@ -327,7 +334,7 @@ public class RepClient extends Client {
                         System.out.println("Customer id: " + arguments.elementAt(2));
                         Id = getInt(arguments.elementAt(1));
                         customer = getInt(arguments.elementAt(2));
-                        String bill = primaryRM.queryCustomerInfo(Id, customer);
+                        String bill = primaryRM.queryCustomerInfo(Id, getOPID(), customer);
                         System.out.println("Customer info:" + bill);
                         break;
 
@@ -340,7 +347,7 @@ public class RepClient extends Client {
                         System.out.println("Flight number: " + arguments.elementAt(2));
                         Id = getInt(arguments.elementAt(1));
                         flightNum = getInt(arguments.elementAt(2));
-                        price = primaryRM.queryFlightPrice(Id, flightNum);
+                        price = primaryRM.queryFlightPrice(Id, getOPID(), flightNum);
                         System.out.println("Price of a seat:" + price);
                         break;
 
@@ -353,7 +360,7 @@ public class RepClient extends Client {
                         System.out.println("Car location: " + arguments.elementAt(2));
                         Id = getInt(arguments.elementAt(1));
                         location = getString(arguments.elementAt(2));
-                        price = primaryRM.queryCarsPrice(Id, location);
+                        price = primaryRM.queryCarsPrice(Id, getOPID(), location);
                         System.out.println("Price of a car at this location:" + price);
                         break;
 
@@ -366,7 +373,7 @@ public class RepClient extends Client {
                         System.out.println("Room Location: " + arguments.elementAt(2));
                         Id = getInt(arguments.elementAt(1));
                         location = getString(arguments.elementAt(2));
-                        price = primaryRM.queryRoomsPrice(Id, location);
+                        price = primaryRM.queryRoomsPrice(Id, getOPID(), location);
                         System.out.println("Price of Rooms at this location:" + price);
                         break;
 
@@ -381,7 +388,7 @@ public class RepClient extends Client {
                         Id = getInt(arguments.elementAt(1));
                         customer = getInt(arguments.elementAt(2));
                         flightNum = getInt(arguments.elementAt(3));
-                        if (primaryRM.reserveFlight(Id, customer, flightNum))
+                        if (primaryRM.reserveFlight(Id, getOPID(), customer, flightNum))
                             System.out.println("Flight Reserved");
                         else
                             System.out.println("Flight could not be reserved.");
@@ -400,7 +407,7 @@ public class RepClient extends Client {
                         customer = getInt(arguments.elementAt(2));
                         location = getString(arguments.elementAt(3));
 
-                        if (primaryRM.reserveCar(Id, customer, location))
+                        if (primaryRM.reserveCar(Id, getOPID(), customer, location))
                             System.out.println("Car Reserved");
                         else
                             System.out.println("Car could not be reserved.");
@@ -418,7 +425,7 @@ public class RepClient extends Client {
                         customer = getInt(arguments.elementAt(2));
                         location = getString(arguments.elementAt(3));
 
-                        if (primaryRM.reserveRoom(Id, customer, location))
+                        if (primaryRM.reserveRoom(Id, getOPID(), customer, location))
                             System.out.println("Room Reserved");
                         else
                             System.out.println("Room could not be reserved.");
@@ -445,8 +452,12 @@ public class RepClient extends Client {
                         Car = getBoolean(arguments.elementAt(arguments.size() - 2));
                         Room = getBoolean(arguments.elementAt(arguments.size() - 1));
 
-                        if (primaryRM.itinerary(Id, customer, flightNumbers, location, Car, Room))
+                        if (primaryRM.itinerary(Id, getOPID(), customer, flightNumbers, location, Car, Room)){
+                            //increase for three times in total
+                            getOPID();
+                            getOPID();
                             System.out.println("Itinerary Reserved");
+                        }
                         else
                             System.out.println("Itinerary could not be reserved.");
                         break;
@@ -468,7 +479,7 @@ public class RepClient extends Client {
                         System.out.println("Adding a new Customer using id:" + arguments.elementAt(1) + " and cid " + arguments.elementAt(2));
                         Id = getInt(arguments.elementAt(1));
                         Cid = getInt(arguments.elementAt(2));
-                        boolean customersuccess = primaryRM.newCustomer(Id, Cid);
+                        boolean customersuccess = primaryRM.newCustomer(Id, getOPID(), Cid);
                         System.out.println("new customer id:" + Cid);
                         break;
 

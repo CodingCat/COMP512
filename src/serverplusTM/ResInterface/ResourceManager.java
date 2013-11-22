@@ -33,14 +33,14 @@ public interface ResourceManager extends Remote
      *
      * @return success.
      */
-    public boolean isAlive() throws RemoteException;
-    public boolean isPrimary() throws RemoteException;
+	public boolean isPrimary() throws RemoteException;
+	//Added int operationID for not executing the same requests more than once if there is a failure
 	public int start() throws RemoteException;
-	public void abort(int txID) throws RemoteException,InvalidTransactionException;
+	public void abort(int txID) throws RemoteException,InvalidTransactionException, TransactionAbortedException;
 	public boolean commit(int txID) throws RemoteException, TransactionAbortedException,
 	InvalidTransactionException;
 	public boolean shutdown() throws RemoteException,NotBoundException;
-	public boolean addFlight(int id, int flightNum, int flightSeats,
+	public boolean addFlight(int id,int operationID, int flightNum, int flightSeats,
 			int flightPrice) throws RemoteException,TransactionAbortedException,
 			InvalidTransactionException; 
     
@@ -48,7 +48,7 @@ public interface ResourceManager extends Remote
      * This should look a lot like addFlight, only keyed on a string location
      * instead of a flight number.
      */
-    public boolean addCars(int id, String location, int numCars, int price) 
+    public boolean addCars(int id,int operationID, String location, int numCars, int price) 
 	throws RemoteException,TransactionAbortedException,
 	InvalidTransactionException; 
    
@@ -56,18 +56,18 @@ public interface ResourceManager extends Remote
      * This should look a lot like addFlight, only keyed on a string location
      * instead of a flight number.
      */
-    public boolean addRooms(int id, String location, int numRooms, int price) 
+    public boolean addRooms(int id,int operationID, String location, int numRooms, int price) 
 	throws RemoteException,TransactionAbortedException,
 	InvalidTransactionException; 			    
 
 			    
     /* new customer just returns a unique customer identifier */
-    public int newCustomer(int id) 
+    public int newCustomer(int id,int operationID) 
 	throws RemoteException,TransactionAbortedException,
 	InvalidTransactionException; 
     
     /* new customer with providing id */
-    public boolean newCustomer(int id, int cid)
+    public boolean newCustomer(int id,int operationID, int cid)
     throws RemoteException,TransactionAbortedException,
 	InvalidTransactionException;
 
@@ -79,7 +79,7 @@ public interface ResourceManager extends Remote
      *
      * @return success.
      */   
-    public boolean deleteFlight(int id, int flightNum) 
+    public boolean deleteFlight(int id,int operationID, int flightNum) 
 	throws RemoteException,TransactionAbortedException,
 	InvalidTransactionException; 
     
@@ -88,7 +88,7 @@ public interface ResourceManager extends Remote
      *
      * @return success
      */		    
-    public boolean deleteCars(int id, String location) 
+    public boolean deleteCars(int id,int operationID, String location) 
 	throws RemoteException,TransactionAbortedException,
 	InvalidTransactionException; 
 
@@ -97,68 +97,68 @@ public interface ResourceManager extends Remote
      *
      * @return success
      */
-    public boolean deleteRooms(int id, String location) 
+    public boolean deleteRooms(int id,int operationID, String location) 
 	throws RemoteException,TransactionAbortedException,
 	InvalidTransactionException; 
     
     /* deleteCustomer removes the customer and associated reservations */
-    public boolean deleteCustomer(int id,int customer) 
+    public boolean deleteCustomer(int id,int operationID,int customer) 
 	throws RemoteException,TransactionAbortedException,
 	InvalidTransactionException; 
 
     /* queryFlight returns the number of empty seats. */
-    public int queryFlight(int id, int flightNumber) 
+    public int queryFlight(int id,int operationID, int flightNumber) 
 	throws RemoteException,TransactionAbortedException,
 	InvalidTransactionException; 
 
     /* return the number of cars available at a location */
-    public int queryCars(int id, String location) 
+    public int queryCars(int id,int operationID, String location) 
 	throws RemoteException,TransactionAbortedException,
 	InvalidTransactionException; 
 
     /* return the number of rooms available at a location */
-    public int queryRooms(int id, String location) 
+    public int queryRooms(int id,int operationID, String location) 
 	throws RemoteException,TransactionAbortedException,
 	InvalidTransactionException; 
 
     /* return a bill */
-    public String queryCustomerInfo(int id,int customer) 
+    public String queryCustomerInfo(int id,int operationID,int customer) 
 	throws RemoteException,TransactionAbortedException,
 	InvalidTransactionException; 
     
     /* queryFlightPrice returns the price of a seat on this flight. */
-    public int queryFlightPrice(int id, int flightNumber) 
+    public int queryFlightPrice(int id,int operationID, int flightNumber) 
 	throws RemoteException,TransactionAbortedException,
 	InvalidTransactionException; 
 
     /* return the price of a car at a location */
-    public int queryCarsPrice(int id, String location) 
+    public int queryCarsPrice(int id,int operationID, String location) 
 	throws RemoteException,TransactionAbortedException,
 	InvalidTransactionException; 
 
     /* return the price of a room at a location */
-    public int queryRoomsPrice(int id, String location) 
+    public int queryRoomsPrice(int id,int operationID, String location) 
 	throws RemoteException,TransactionAbortedException,
 	InvalidTransactionException; 
 
     /* Reserve a seat on this flight*/
-    public boolean reserveFlight(int id, int customer, int flightNumber) 
+    public boolean reserveFlight(int id,int operationID, int customer, int flightNumber) 
 	throws RemoteException,TransactionAbortedException,
 	InvalidTransactionException; 
 
     /* reserve a car at this location */
-    public boolean reserveCar(int id, int customer, String location) 
+    public boolean reserveCar(int id,int operationID, int customer, String location) 
 	throws RemoteException,TransactionAbortedException,
 	InvalidTransactionException; 
 
     /* reserve a room certain at this location */
-    public boolean reserveRoom(int id, int customer, String locationd) 
+    public boolean reserveRoom(int id,int operationID, int customer, String locationd) 
 	throws RemoteException,TransactionAbortedException,
 	InvalidTransactionException; 
 
 
     /* reserve an itinerary */
-    public boolean itinerary(int id,int customer,Vector flightNumbers,String location, boolean Car, boolean Room)
+    public boolean itinerary(int id,int operationID,int customer,Vector flightNumbers,String location, boolean Car, boolean Room)
 	throws RemoteException,TransactionAbortedException,
 	InvalidTransactionException; 
     			
