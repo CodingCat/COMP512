@@ -21,9 +21,9 @@ public class TransGenericResourceManager extends GenericResourceManager {
     }
 
     private ConcurrentHashMap<Integer, ArrayList<Tuple3>> operationList =
-            new ConcurrentHashMap<Integer, ArrayList<Tuple3>>();//transaction_id -> tuple2 list
+            new ConcurrentHashMap<Integer, ArrayList<Tuple3>>();//transaction_id -> tuple3 list
 
-    private void checkOperationQueue(int id) 
+    private void checkOperationQueue(int id)
     {
         if (!operationList.containsKey(id)) 
         {
@@ -126,14 +126,14 @@ public class TransGenericResourceManager extends GenericResourceManager {
         } // if
     }
 
-    private void deleteReservation(ReservableItem item, int reservedItemCount) 
+    private void deleteReservation(ReservableItem item, int opID, int reservedItemCount)
     {
         item.setReserved(item.getReserved() - reservedItemCount);
         item.setCount(item.getCount() + reservedItemCount);
     }
 
     @Override
-    public boolean deleteReservationfromRM(int id,int operationID, String key, int reservedItemCount) {
+    public boolean deleteReservationfromRM(int id, int operationID, String key, int reservedItemCount) {
         ReservableItem item;
         //read old value
         item = (ReservableItem) readDatafromRM(id, key);
@@ -141,7 +141,7 @@ public class TransGenericResourceManager extends GenericResourceManager {
         Tuple3 t3 = new Tuple3(key, 4, item);
         t3.oldint = item.getReserved();
         operationList.get(id).add(0, t3);
-        deleteReservation(item, reservedItemCount);
+        deleteReservation(item, operationID, reservedItemCount);
         System.out.println("Delete reservation called.");
         return true;
     }
