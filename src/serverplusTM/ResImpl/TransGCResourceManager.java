@@ -84,11 +84,7 @@ public abstract class TransGCResourceManager extends TransGenericResourceManager
     protected GenericMessageHandler mh;
 
     public TransGCResourceManager(String groupName, String msgFilePath) {
-        try {
-            mh = new GenericMessageHandler(groupName);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
     }
 
     public boolean isPrimary() {

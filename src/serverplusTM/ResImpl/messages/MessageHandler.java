@@ -12,7 +12,7 @@ public class MessageHandler extends ReceiverAdapter {
             iochannel.setReceiver(this);
             iochannel.connect(groupName);
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
 
@@ -47,6 +47,4 @@ public class MessageHandler extends ReceiverAdapter {
             e.printStackTrace();
         }
     }
-
-
 }
