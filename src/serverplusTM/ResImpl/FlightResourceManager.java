@@ -16,8 +16,35 @@ import java.rmi.server.UnicastRemoteObject;
 public class FlightResourceManager
         extends TransGCResourceManager implements FlightInterface {
 
+    class FlightMessageHandler extends GenericMessageHandler {
+        public FlightMessageHandler(String groupName) {
+            super(groupName);
+        }
+
+        @Override
+        public void receive(Message msg) {
+            super.receive(msg);
+            String msgString = (String) msg.getObject();
+            String [] arr = msgString.split(";");
+            String type = arr[0];
+            if (type.equals("write")) {
+                String writeString = arr[1];
+                String [] parameters = arr[1].split(",");
+                Flight f = new Flight(Integer.parseInt(parameters[2]),
+                        Integer.parseInt(parameters[3]),
+                        Integer.parseInt(parameters[4]));
+                f.setReserved(Integer.parseInt(parameters[5]));
+                realizeWriteMessage(Integer.parseInt(parameters[0]), Integer.parseInt(parameters[1]),
+                        f.getKey(), f);
+            }
+        }
+    }
+
     public FlightResourceManager (String groupName, String msgFilePath) {
         super(groupName, msgFilePath);
+        mh = new FlightMessageHandler(groupName);
+        mh.castMessage("join", null);
+        sendSyncRequest();
     }
 
     public RMItem readData( int id, String key ) throws RemoteException
@@ -25,11 +52,7 @@ public class FlightResourceManager
         return readDatafromRM(id, key);
     }
 
-    // Writes a data item
-    /*public void writeData( int id, String key, RMItem value )
-    {
-    	super.writeData(id, key, value);
-    }*/
+
     @Override
     public boolean deleteReservation(int id, int opID, String key,
                                      int reservedItemCount) throws RemoteException
@@ -117,7 +140,7 @@ public class FlightResourceManager
             port = Integer.parseInt(args[0]);
         } else if (args.length != 0 &&  args.length != 3) {
             System.err.println ("Wrong usage");
-            System.out.println("Usage: java ResImpl.ResourceManagerImpl [port] groupName msgFilePath");
+            System.out.println("Usage: java ResImpl.ResourceManagerImpl [port] groupName ObjName");
             System.exit(1);
         }
 
@@ -131,7 +154,7 @@ public class FlightResourceManager
 
             // Bind the remote object's stub in the registry
             Registry registry = LocateRegistry.getRegistry(port);
-            registry.rebind("Group28FlightRM", rm);
+            registry.rebind(args[2], rm);
 
             System.err.println("Flight Server ready");
         } catch (Exception e) {
@@ -158,23 +181,4 @@ public class FlightResourceManager
         }
     }
 
-
-    @Override
-    public Object handle(Message msg) throws Exception {
-        super.handle(msg);
-        String msgString = (String) msg.getObject();
-        String [] arr = msgString.split(";");
-        String type = arr[0];
-        if (type.equals("write")) {
-            String writeString = arr[1];
-            String [] parameters = arr[1].split(",");
-            Flight f = new Flight(Integer.parseInt(parameters[2]),
-                    Integer.parseInt(parameters[3]),
-                    Integer.parseInt(parameters[4]));
-            f.setReserved(Integer.parseInt(parameters[5]));
-            realizeWriteMessage(Integer.parseInt(parameters[0]), Integer.parseInt(parameters[1]),
-                    f.getKey(), f);
-        }
-        return "ACK";
-    }
 }

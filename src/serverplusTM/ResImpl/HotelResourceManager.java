@@ -14,9 +14,34 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class HotelResourceManager extends TransGCResourceManager implements HotelInterface
 {
+    class HotelMessageHandler extends GenericMessageHandler {
+        public HotelMessageHandler(String groupName) {
+            super(groupName);
+        }
+
+        @Override
+        public void receive(Message msg) {
+            super.receive(msg);
+            String msgString = (String) msg.getObject();
+            String [] arr = msgString.split(";");
+            String type = arr[0];
+            if (type.equals("write")) {
+                String [] parameters = arr[1].split(",");
+                Hotel f = new Hotel(parameters[2],
+                        Integer.parseInt(parameters[3]),
+                        Integer.parseInt(parameters[4]));
+                f.setReserved(Integer.parseInt(parameters[5]));
+                realizeWriteMessage(Integer.parseInt(parameters[0]), Integer.parseInt(parameters[1]),
+                        f.getKey(), f);
+            }
+        }
+    }
 
     public HotelResourceManager(String groupName, String xmlPath) {
         super(groupName, xmlPath);
+        mh = new HotelMessageHandler(groupName);
+        mh.castMessage("join", null);
+        sendSyncRequest();
     }
 
     public RMItem readData( int id, String key )
@@ -105,25 +130,6 @@ public class HotelResourceManager extends TransGCResourceManager implements Hote
         }
     }
 
-    @Override
-    public Object handle(Message msg) throws Exception {
-        super.handle(msg);
-        String msgString = (String) msg.getObject();
-        String [] arr = msgString.split(";");
-        String type = arr[0];
-        if (type.equals("write")) {
-            String writeString = arr[1];
-            String [] parameters = arr[1].split(",");
-            Hotel f = new Hotel(parameters[2],
-                    Integer.parseInt(parameters[3]),
-                    Integer.parseInt(parameters[4]));
-            f.setReserved(Integer.parseInt(parameters[5]));
-            realizeWriteMessage(Integer.parseInt(parameters[0]), Integer.parseInt(parameters[1]),
-                    f.getKey(), f);
-        }
-        return "ACK";
-    }
-
 
     /**
      * @param args
@@ -138,7 +144,7 @@ public class HotelResourceManager extends TransGCResourceManager implements Hote
             port = Integer.parseInt(args[0]);
         } else if (args.length != 0 &&  args.length != 1) {
             System.err.println ("Wrong usage");
-            System.out.println("Usage: java ResImpl.CarResourceManager [port] groupName xmlPath");
+            System.out.println("Usage: java ResImpl.CarResourceManager [port] groupName objname");
             System.exit(1);
         }
 
@@ -151,7 +157,7 @@ public class HotelResourceManager extends TransGCResourceManager implements Hote
 
             // Bind the remote object's stub in the registry
             Registry registry = LocateRegistry.getRegistry(port);
-            registry.rebind("Group28HotelRM", rm);
+            registry.rebind(args[2], rm);
 
             System.err.println("Hotel Server ready");
         } catch (Exception e) {
