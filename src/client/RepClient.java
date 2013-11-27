@@ -45,11 +45,10 @@ public class RepClient extends Client {
                                     serverList.get(i).serverport);
                             serverList.get(i).rmobj = (ResourceManager)
                                     serverList.get(i).res.lookup(serverList.get(i).servername);
-                            serverList.get(i).rmobj.isPrimary();
                             serverList.get(i).livemark = true;
                         }
                     }
-                    Thread.sleep(1000);
+                    Thread.sleep(10 * 1000);
                 } catch (RemoteException re) {
                     re.printStackTrace();
                 }  catch (InterruptedException ie) {
@@ -84,7 +83,6 @@ public class RepClient extends Client {
                             linearr[0], Integer.parseInt(linearr[1]));
                     serverList.get(tailpos).rmobj = (ResourceManager) serverList.get(
                             tailpos).res.lookup(linearr[2]);
-                    serverList.get(tailpos).rmobj.isPrimary();
                 } catch (RemoteException e) {
                     System.out.println("failed to connect to remote object, " + sd.toString() +
                             ", adding it as dead server");
@@ -108,8 +106,7 @@ public class RepClient extends Client {
     private void electPrimary() {
         for (int i = 0; i < serverList.size(); i++) {
             try {
-                if (serverList.get(i).rmobj != null &&
-                        serverList.get(i).rmobj.isPrimary()) {
+                if (serverList.get(i).rmobj.isPrimary()) {
                     primaryIdx = i;
                     primaryRM = serverList.get(i).rmobj;
                     break;
@@ -572,8 +569,6 @@ public class RepClient extends Client {
                 } catch (RemoteException e) {
                     System.out.println(serverList.get(primaryIdx) + " is dead");
                     System.out.println("electing new coordinator");
-                    serverList.get(primaryIdx).rmobj = null;
-                    serverList.get(primaryIdx).livemark = false;
                     electPrimary();
                     System.out.println("new coordinator is " + serverList.get(primaryIdx));
                     System.out.println("resending request... ");
